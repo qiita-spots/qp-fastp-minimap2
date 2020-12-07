@@ -38,7 +38,7 @@ install:
   - samtools_version=`samtools --version`
   - minimap2_version=`minimap2 --version`
   - fastp_version=`fastp --version`
-  - if [[ $samtools_version != *"1.10"* ]]; then echo "wrong samtools version", $samtools_version; exit 1; fi
+  - if [[ $samtools_version != *"1.7"* ]]; then echo "wrong samtools version", $samtools_version; exit 1; fi
   - if [[ $minimap2_version != *"2.17"* ]]; then echo "wrong minimap2 version", $minimap2_version; exit 1; fi
   - if [[ $fastp_version != *"20.1"* ]]; then echo "wrong fastp version", $fastp_version; exit 1; fi
   - configure_qp_fastp_minimap2 --env-script 'source ~/.bash_profile; source activate qp-fastp-minimap2' --server-cert $QIITA_SERVER_CERT
