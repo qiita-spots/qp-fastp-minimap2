@@ -37,7 +37,7 @@ install:
   # making sure we have the correct software versions
   - samtools_version=`samtools --version`
   - minimap2_version=`minimap2 --version`
-  - fastp_version=`fastp --version`
+  - fastp_version=$(fastp --version 2>&1)
   - if [[ $samtools_version != *"1.7"* ]]; then echo "wrong samtools version", $samtools_version; exit 1; fi
   - if [[ $minimap2_version != *"2.17"* ]]; then echo "wrong minimap2 version", $minimap2_version; exit 1; fi
   - if [[ $fastp_version != *"20.1"* ]]; then echo "wrong fastp version", $fastp_version; exit 1; fi
