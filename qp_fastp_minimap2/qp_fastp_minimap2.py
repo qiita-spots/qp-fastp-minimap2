@@ -6,12 +6,13 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 from os import environ
+from glob import glob
 
 
 def get_dbs_list():
-    print(environ["QC_FILTER_DB"])
+    folder = environ["QC_REFERENCE_DB"]
 
-    return ['DB1', 'DB2', 'DB3']
+    return [f for f in glob(f'{folder}/*.mmi')]
 
 
 def fastp_minimap2(qclient, job_id, parameters, out_dir):

@@ -87,3 +87,6 @@ ENV/
 
 # Rope project settings
 .ropeproject
+
+# help databases
+qp_fastp_minimap2/support_files/databases/*.mmi

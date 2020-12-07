@@ -30,19 +30,23 @@ with open('README.rst') as f:
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-setup(name='qp-fastp-minimap2 Qiita Plugin',
+setup(name='qp-fastp-minimap2',
       version=__version__,
       long_description=long_description,
       license="BSD",
-      description='Qiita Type Plugin: qp-fastp-minimap2',
+      description='Qiita Plugin: qp-fastp-minimap2',
       author="Qiita development team",
       author_email="qiita.help@gmail.com",
       url='https://github.com/qiita-spots/qp-fastp-minimap2',
       test_suite='nose.collector',
       packages=['qp_fastp_minimap2'],
-      package_data={'qp_fastp_minimap2': ['support_files/config_file.cfg']},
+      package_data={'qp_fastp_minimap2': [
+        'support_files/*', 'support_files/databases/*']},
       scripts=glob('scripts/*'),
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
-      install_requires=['click >= 3.3', 'qiita_client'],
+
+      install_requires=['click >= 3.3', 'future', 'pandas >= 0.15',
+                        'qiita_client @ https://github.com/qiita-spots/'
+                        'qiita_client/archive/master.zip'],
       classifiers=classifiers
       )

@@ -7,7 +7,7 @@
 # -----------------------------------------------------------------------------
 
 from qiita_client import QiitaPlugin, QiitaCommand
-from qp_fastp_minimap2 import get_dbs_list, fastp_minimap2
+from .qp_fastp_minimap2 import get_dbs_list, fastp_minimap2
 
 # TODO: include relevant imports here
 # from .mycommand import my_command_function
