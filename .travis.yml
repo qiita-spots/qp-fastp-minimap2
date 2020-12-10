@@ -51,7 +51,7 @@ before_script:
   - cat /tmp/supervisord.log
 script:
   - source activate qp-fastp-minimap2
-  - travis_wait 40 nosetests $COVER_PACKAGE --with-doctest --with-coverage --with-timer -vv --cover-package=$COVER_PACKAGE
+  - travis_wait 40 nosetests $COVER_PACKAGE --with-doctest --with-coverage -vv --cover-package=$COVER_PACKAGE
   - flake8 qp_fastp_minimap2 setup.py scripts/*
 addons:
   postgresql: "9.5"
