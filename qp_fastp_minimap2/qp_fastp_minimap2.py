@@ -41,14 +41,12 @@ def get_dbs_list():
 
 def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
+    files = zip_longest(fwd_seqs, rev_seqs)
     if rev_seqs:
-        files = zip_longest(fwd_seqs, rev_seqs)
         cmd = FASTP_CMD
         if database is not None:
             cmd = COMBINED_CMD
     else:
-        files = fwd_seqs
-
         cmd = FASTP_CMD_SINGLE
         if database is not None:
             cmd = COMBINED_CMD_SINGLE
