@@ -9,8 +9,6 @@ datasets.
 
 This package includes the qp-fastp-minimap2 Qiita plugin.
 
-#TODO: Add a description of the processing commands added in this plugin.
-
 How to test this package?
 -------------------------
 In order to test the qp-fastp-minimap2 package, a local

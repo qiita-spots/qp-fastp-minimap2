@@ -18,18 +18,20 @@ from qiita_client.util import system_call
 
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
-FASTP_CMD = ('fastp -l 100 -i %s -I %s -w {nprocs} '
-             '-o {out_dir}/%s -O {out_dir}/%s')
-COMBINED_CMD = ('fastp -l 100 -i %s -I %s -w {nprocs} --stdout | '
-                'minimap2 -ax sr -t {nprocs} {database} - -a | '
-                'samtools fastq -@ {nprocs} -f 12 -F 256 '
-                '-1 {out_dir}/%s -2 {out_dir}/%s')
-FASTP_CMD_SINGLE = ('fastp -l 100 -i %s -w {nprocs} '
-                    '-o {out_dir}/%s')
-COMBINED_CMD_SINGLE = ('fastp -l 100 -i %s -w {nprocs} --stdout | '
-                       'minimap2 -ax sr -t {nprocs} {database} - -a | '
-                       'samtools fastq -@ {nprocs} -f 12 -F 256 '
-                       '-1 {out_dir}/%s')
+
+FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
+MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
+SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f 12 -F 256'
+
+FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
+FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
+                    '{out_dir}/%s')
+COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
+                f'{SAMTOOLS_BASE} -1 '
+                '{out_dir}/%s -2 {out_dir}/%s')
+COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
+                       f'{SAMTOOLS_BASE} -1 '
+                       '{out_dir}/%s')
 
 
 def get_dbs_list():

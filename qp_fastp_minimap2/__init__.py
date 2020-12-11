@@ -8,6 +8,7 @@
 
 from qiita_client import QiitaPlugin, QiitaCommand
 from .qp_fastp_minimap2 import get_dbs_list, fastp_minimap2
+from os.path import splitext
 
 
 THREADS = 15
@@ -18,7 +19,7 @@ plugin = QiitaPlugin(
 
 # Define the command
 dbs = get_dbs_list()
-dbs_without_extension = [db.replace('.mmi', '') for db in dbs]
+dbs_without_extension = [splitext(db)[0] for db in dbs]
 dbs_defaults = ', '.join([f'"{x}"' for x in dbs_without_extension])
 req_params = {'input': ('artifact', ['per_sample_FASTQ'])}
 opt_params = {
