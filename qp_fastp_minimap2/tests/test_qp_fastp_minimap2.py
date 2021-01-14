@@ -156,7 +156,7 @@ class FastpMinimap2Tests(PluginTestCase):
                   'raw_forward_seqs'),
                  (f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz',
                   'raw_reverse_seqs')]
-        exp = ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)
+        exp = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)]
 
         self.assertEqual(ainfo, exp)
 
@@ -213,7 +213,7 @@ class FastpMinimap2Tests(PluginTestCase):
                   'raw_forward_seqs'),
                  (f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz',
                   'raw_forward_seqs')]
-        exp = ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)
+        exp = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)]
 
         self.assertEqual(ainfo, exp)
 

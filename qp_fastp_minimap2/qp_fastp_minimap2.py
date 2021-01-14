@@ -139,6 +139,6 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     # Step 4 generating artifacts
     msg = "Step 4 of 4: Generating new artifact"
     qclient.update_job_step(job_id, msg)
-    ainfo = ArtifactInfo('Filtered files', 'per_sample_FASTQ', out_files)
+    ainfo = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', out_files)]
 
     return True, ainfo, ""
