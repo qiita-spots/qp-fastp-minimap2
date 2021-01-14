@@ -97,7 +97,10 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     # Get the artifact filepath information
     artifact_info = qclient.get("/qiita_db/artifacts/%s/" % artifact_id)
     fwd_seqs = sorted(artifact_info['files']['raw_forward_seqs'])
-    rev_seqs = sorted(artifact_info['files']['raw_reverse_seqs'])
+    if 'raw_reverse_seqs' in artifact_info['files']:
+        rev_seqs = sorted(artifact_info['files']['raw_reverse_seqs'])
+    else:
+        rev_seqs = []
 
     # Get the artifact metadata
     prep_info = qclient.get('/qiita_db/prep_template/%s/'

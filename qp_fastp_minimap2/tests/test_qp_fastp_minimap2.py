@@ -160,6 +160,63 @@ class FastpMinimap2Tests(PluginTestCase):
 
         self.assertEqual(ainfo, exp)
 
+    def test_fastp_minimap2_just_fwd(self):
+        # inserting new prep template
+        prep_info_dict = {
+            'SKB8.640193': {'run_prefix': 'S22205_S104'},
+            'SKD8.640184': {'run_prefix': 'S22282_S102'}}
+        data = {'prep_info': dumps(prep_info_dict),
+                # magic #1 = testing study
+                'study': 1,
+                'data_type': 'Metagenomic'}
+        pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
+
+        # inserting artifacts
+        in_dir = mkdtemp()
+        self._clean_up_files.append(in_dir)
+
+        fp1_1 = join(in_dir, 'S22205_S104_L001_R1_001.fastq.gz')
+        fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
+        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
+        copyfile(f'{source_dir}/S22205_S104_L001_R1_001.fastq.gz', fp1_1)
+        copyfile(f'{source_dir}/S22282_S102_L001_R1_001.fastq.gz', fp2_1)
+
+        data = {
+            'filepaths': dumps([
+                (fp1_1, 'raw_forward_seqs'),
+                (fp2_1, 'raw_forward_seqs')]),
+            'type': "per_sample_FASTQ",
+            'name': "Test artifact",
+            'prep': pid}
+        aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
+
+        self.params['input'] = aid
+
+        data = {'user': 'demo@microbio.me',
+                'command': dumps(['qp-fastp-minimap2', '2021.01',
+                                  'Adapter and host filtering']),
+                'status': 'running',
+                'parameters': dumps(self.params)}
+        job_id = self.qclient.post(
+            '/apitest/processing_job/', data=data)['job']
+
+        out_dir = mkdtemp()
+        self._clean_up_files.append(out_dir)
+
+        success, ainfo, msg = fastp_minimap2(
+            self.qclient, job_id, self.params, out_dir)
+
+        self.assertEqual("", msg)
+        self.assertTrue(success)
+
+        files = [(f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz',
+                  'raw_forward_seqs'),
+                 (f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz',
+                  'raw_forward_seqs')]
+        exp = ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)
+
+        self.assertEqual(ainfo, exp)
+
 
 if __name__ == '__main__':
     main()
