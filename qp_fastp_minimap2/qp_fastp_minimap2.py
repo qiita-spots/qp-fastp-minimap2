@@ -21,16 +21,16 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
 MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
-SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f 12 -F 256'
+SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
 FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
 FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
                     '{out_dir}/%s')
 COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
-                f'{SAMTOOLS_BASE} -1 '
+                f'{SAMTOOLS_BASE} 12 -F 256 -1 '
                 '{out_dir}/%s -2 {out_dir}/%s')
 COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-                       f'{SAMTOOLS_BASE} -1 '
+                       f'{SAMTOOLS_BASE} 4 -0 '
                        '{out_dir}/%s')
 
 
