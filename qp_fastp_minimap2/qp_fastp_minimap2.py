@@ -21,16 +21,16 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
 MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
-SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f 12 -F 256'
+SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
 FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
 FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
                     '{out_dir}/%s')
 COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
-                f'{SAMTOOLS_BASE} -1 '
+                f'{SAMTOOLS_BASE} 12 -F 256 -1 '
                 '{out_dir}/%s -2 {out_dir}/%s')
 COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-                       f'{SAMTOOLS_BASE} -1 '
+                       f'{SAMTOOLS_BASE} 4 -0 '
                        '{out_dir}/%s')
 
 
@@ -97,7 +97,10 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     # Get the artifact filepath information
     artifact_info = qclient.get("/qiita_db/artifacts/%s/" % artifact_id)
     fwd_seqs = sorted(artifact_info['files']['raw_forward_seqs'])
-    rev_seqs = sorted(artifact_info['files']['raw_reverse_seqs'])
+    if 'raw_reverse_seqs' in artifact_info['files']:
+        rev_seqs = sorted(artifact_info['files']['raw_reverse_seqs'])
+    else:
+        rev_seqs = []
 
     # Get the artifact metadata
     prep_info = qclient.get('/qiita_db/prep_template/%s/'
@@ -136,6 +139,6 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     # Step 4 generating artifacts
     msg = "Step 4 of 4: Generating new artifact"
     qclient.update_job_step(job_id, msg)
-    ainfo = ArtifactInfo('Filtered files', 'per_sample_FASTQ', out_files)
+    ainfo = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', out_files)]
 
     return True, ainfo, ""
