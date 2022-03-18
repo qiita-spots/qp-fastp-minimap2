@@ -334,7 +334,7 @@ class FastpMinimap2Tests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
@@ -359,7 +359,7 @@ class FastpMinimap2Tests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
