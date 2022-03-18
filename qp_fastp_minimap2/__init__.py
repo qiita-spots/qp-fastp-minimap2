@@ -8,14 +8,15 @@
 
 from qiita_client import QiitaPlugin, QiitaCommand
 from .qp_fastp_minimap2 import get_dbs_list, fastp_minimap2
+from .utils import plugin_details
 from os.path import splitext
 
 
 THREADS = 15
 
+
 # Initialize the plugin
-plugin = QiitaPlugin(
-    'qp-fastp-minimap2', '2021.01', 'fastp + minimap2 pipeline')
+plugin = QiitaPlugin(**plugin_details)
 
 # Define the command
 dbs = get_dbs_list()

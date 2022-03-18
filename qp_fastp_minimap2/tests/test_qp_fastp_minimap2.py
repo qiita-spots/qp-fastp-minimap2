@@ -7,17 +7,18 @@
 # -----------------------------------------------------------------------------
 from unittest import main
 from qiita_client.testing import PluginTestCase
-from qiita_client import ArtifactInfo
-from os import remove
-from os.path import exists, isdir, join
+from os import remove, environ
+from os.path import exists, isdir, join, dirname
 from shutil import rmtree, copyfile
 from tempfile import mkdtemp
 from json import dumps
 from itertools import zip_longest
+from functools import partial
 
 from qp_fastp_minimap2 import plugin
+from qp_fastp_minimap2.utils import plugin_details
 from qp_fastp_minimap2.qp_fastp_minimap2 import (
-    get_dbs_list, _generate_commands, fastp_minimap2, QC_REFERENCE_DB,
+    get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB,
     FASTP_CMD, COMBINED_CMD, FASTP_CMD_SINGLE, COMBINED_CMD_SINGLE)
 
 
@@ -132,7 +133,8 @@ class FastpMinimap2Tests(PluginTestCase):
         self.params['input'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['qp-fastp-minimap2', '2021.01',
+                'command': dumps([plugin_details['name'],
+                                  plugin_details['version'],
                                   'Adapter and host filtering']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
@@ -142,23 +144,107 @@ class FastpMinimap2Tests(PluginTestCase):
         out_dir = mkdtemp()
         self._clean_up_files.append(out_dir)
 
-        success, ainfo, msg = fastp_minimap2(
-            self.qclient, job_id, self.params, out_dir)
+        # adding extra parameters
+        self.params['environment'] = environ["ENVIRONMENT"]
 
-        self.assertEqual("", msg)
-        self.assertTrue(success)
+        # Get the artifact filepath information
+        artifact_info = self.qclient.get("/qiita_db/artifacts/%s/" % aid)
 
-        files = [(f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz',
-                  'raw_forward_seqs'),
-                 (f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz',
-                  'raw_reverse_seqs'),
-                 (f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz',
-                  'raw_forward_seqs'),
-                 (f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz',
-                  'raw_reverse_seqs')]
-        exp = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)]
+        # Get the artifact metadata
+        prep_info = self.qclient.get('/qiita_db/prep_template/%s/' % pid)
+        prep_file = prep_info['prep-file']
 
-        self.assertEqual(ainfo, exp)
+        url = 'this-is-my-url'
+
+        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+            artifact_info['files'], out_dir, self.params, prep_file,
+            url, job_id)
+
+        od = partial(join, out_dir)
+        self.assertEqual(od(f'{job_id}.qsub'), main_qsub_fp)
+        self.assertEqual(od(f'{job_id}.finish.qsub'), finish_qsub_fp)
+        self.assertEqual(od(f'{job_id}.out_files.tsv'), out_files_fp)
+
+        with open(main_qsub_fp) as f:
+            main_qsub = f.readlines()
+        with open(finish_qsub_fp) as f:
+            finish_qsub = f.readlines()
+        with open(out_files_fp) as f:
+            out_files = f.readlines()
+        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+            commands = f.readlines()
+
+        exp_main_qsub = [
+            '#!/bin/bash\n',
+            '#PBS -M qiita.help@gmail.com\n',
+            f'#PBS -N {job_id}\n',
+            '#PBS -l nodes=1:ppn=2\n',
+            '#PBS -l walltime=30:00:00\n',
+            '#PBS -l mem=40g\n',
+            f'#PBS -o {out_dir}/{job_id}_${{PBS_ARRAYID}}.log\n',
+            f'#PBS -e {out_dir}/{job_id}_${{PBS_ARRAYID}}.err\n',
+            '#PBS -t 1-2%8\n',
+            '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
+            'set -e\n',
+            f'cd {out_dir}\n',
+            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            'date\n',
+            'hostname\n',
+            'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
+            'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
+            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            'tail -n 1)\n',
+            'eval $cmd\n',
+            'set +e\n',
+            'date\n']
+        self.assertEqual(main_qsub, exp_main_qsub)
+
+        exp_finish_qsub = [
+            '#!/bin/bash\n',
+            '#PBS -M qiita.help@gmail.com\n',
+            f'#PBS -N finish-{job_id}\n',
+            '#PBS -l nodes=1:ppn=1\n',
+            '#PBS -l walltime=10:00:00\n',
+            '#PBS -l mem=48g\n',
+            f'#PBS -o {out_dir}/finish-{job_id}.log\n',
+            f'#PBS -e {out_dir}/finish-{job_id}.err\n',
+            '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
+            'set -e\n',
+            f'cd {out_dir}\n',
+            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            'date\n',
+            'hostname\n',
+            'echo $PBS_JOBID\n',
+            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            'date\n']
+        self.assertEqual(finish_qsub, exp_finish_qsub)
+
+        exp_out_files = [
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\traw_forward_seqs\n',
+            f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\traw_reverse_seqs\n',
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz\traw_forward_seqs\n',
+            f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz\traw_reverse_seqs']
+        self.assertEqual(out_files, exp_out_files)
+
+        # the easiest to figure out the location of the artifact input files
+        # is to check the first file of the raw forward reads
+        apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
+        exp_commands = [
+            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
+            f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
+            f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
+            'samtools fastq -@ 2 -f  12 -F 256 -1 '
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
+            f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
+            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
+            f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
+            f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
+            'samtools fastq -@ 2 -f  12 -F 256 -1 '
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
+            f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
+        self.assertEqual(commands, exp_commands)
 
     def test_fastp_minimap2_just_fwd(self):
         # inserting new prep template
@@ -193,7 +279,8 @@ class FastpMinimap2Tests(PluginTestCase):
         self.params['input'] = aid
 
         data = {'user': 'demo@microbio.me',
-                'command': dumps(['qp-fastp-minimap2', '2021.01',
+                'command': dumps([plugin_details['name'],
+                                  plugin_details['version'],
                                   'Adapter and host filtering']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
@@ -203,19 +290,101 @@ class FastpMinimap2Tests(PluginTestCase):
         out_dir = mkdtemp()
         self._clean_up_files.append(out_dir)
 
-        success, ainfo, msg = fastp_minimap2(
-            self.qclient, job_id, self.params, out_dir)
+        # adding extra parameters
+        self.params['environment'] = environ["ENVIRONMENT"]
 
-        self.assertEqual("", msg)
-        self.assertTrue(success)
+        # Get the artifact filepath information
+        artifact_info = self.qclient.get("/qiita_db/artifacts/%s/" % aid)
 
-        files = [(f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz',
-                  'raw_forward_seqs'),
-                 (f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz',
-                  'raw_forward_seqs')]
-        exp = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', files)]
+        # Get the artifact metadata
+        prep_info = self.qclient.get('/qiita_db/prep_template/%s/' % pid)
+        prep_file = prep_info['prep-file']
 
-        self.assertEqual(ainfo, exp)
+        url = 'this-is-my-url'
+
+        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+            artifact_info['files'], out_dir, self.params, prep_file,
+            url, job_id)
+
+        od = partial(join, out_dir)
+        self.assertEqual(od(f'{job_id}.qsub'), main_qsub_fp)
+        self.assertEqual(od(f'{job_id}.finish.qsub'), finish_qsub_fp)
+        self.assertEqual(od(f'{job_id}.out_files.tsv'), out_files_fp)
+
+        with open(main_qsub_fp) as f:
+            main_qsub = f.readlines()
+        with open(finish_qsub_fp) as f:
+            finish_qsub = f.readlines()
+        with open(out_files_fp) as f:
+            out_files = f.readlines()
+        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+            commands = f.readlines()
+
+        exp_main_qsub = [
+            '#!/bin/bash\n',
+            '#PBS -M qiita.help@gmail.com\n',
+            f'#PBS -N {job_id}\n',
+            '#PBS -l nodes=1:ppn=2\n',
+            '#PBS -l walltime=30:00:00\n',
+            '#PBS -l mem=40g\n',
+            f'#PBS -o {out_dir}/{job_id}_${{PBS_ARRAYID}}.log\n',
+            f'#PBS -e {out_dir}/{job_id}_${{PBS_ARRAYID}}.err\n',
+            '#PBS -t 1-2%8\n',
+            '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
+            'set -e\n',
+            f'cd {out_dir}\n',
+            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            'date\n',
+            'hostname\n',
+            'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
+            'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
+            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            'tail -n 1)\n',
+            'eval $cmd\n',
+            'set +e\n',
+            'date\n']
+        self.assertEqual(main_qsub, exp_main_qsub)
+
+        exp_finish_qsub = [
+            '#!/bin/bash\n',
+            '#PBS -M qiita.help@gmail.com\n',
+            f'#PBS -N finish-{job_id}\n',
+            '#PBS -l nodes=1:ppn=1\n',
+            '#PBS -l walltime=10:00:00\n',
+            '#PBS -l mem=48g\n',
+            f'#PBS -o {out_dir}/finish-{job_id}.log\n',
+            f'#PBS -e {out_dir}/finish-{job_id}.err\n',
+            '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
+            'set -e\n',
+            f'cd {out_dir}\n',
+            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'export QC_REFERENCE_DB=$QC_REFERENCE_DB\n',
+            'date\n',
+            'hostname\n',
+            'echo $PBS_JOBID\n',
+            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            'date\n']
+        self.assertEqual(finish_qsub, exp_finish_qsub)
+
+        exp_out_files = [
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\traw_forward_seqs\n',
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz\traw_forward_seqs']
+        self.assertEqual(out_files, exp_out_files)
+
+        # the easiest to figure out the location of the artifact input files
+        # is to check the first file of the raw forward reads
+        apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
+        exp_commands = [
+            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
+            f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
+            '- -a  | samtools fastq -@ 2 -f  4 -0 '
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
+            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
+            f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
+            '- -a  | samtools fastq -@ 2 -f  4 -0 '
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
+        self.assertEqual(commands, exp_commands)
 
 
 if __name__ == '__main__':
