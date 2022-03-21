@@ -14,9 +14,9 @@ from itertools import zip_longest
 
 from qiita_client import ArtifactInfo
 
-MEMORY = '40g'
+MEMORY = '16g'
 WALLTIME = '30:00:00'
-FINISH_MEMORY = '48g'
+FINISH_MEMORY = '10g'
 FINISH_WALLTIME = '10:00:00'
 MAX_RUNNING = 8
 
