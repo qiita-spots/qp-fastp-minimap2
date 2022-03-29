@@ -77,7 +77,7 @@ jobs:
         shell: bash -l {0}
         run: |
           conda config --add channels bioconda
-          conda create --yes -n qp-fastp-minimap2 -c bioconda samtools=1.11 minimap2=2.17 python=3.9
+          conda create --yes -n qp-fastp-minimap2 -c bioconda samtools=1.11 minimap2=2.17 fastp=20.1 python=3.6
           conda activate qp-fastp-minimap2
 
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
@@ -94,7 +94,7 @@ jobs:
           fastp_version=$(fastp --version 2>&1)
           if [[ $samtools_version != *"1.11"* ]]; then echo "wrong samtools version", $samtools_version; exit 1; fi
           if [[ $minimap2_version != *"2.17"* ]]; then echo "wrong minimap2 version", $minimap2_version; exit 1; fi
-          if [[ $fastp_version != *"0.20.1"* ]]; then echo "wrong fastp version", $fastp_version; exit 1; fi
+          if [[ $fastp_version != *"20.2"* ]]; then echo "wrong fastp version", $fastp_version; exit 1; fi
 
           configure_qp_fastp_minimap2 --env-script "source ~/.bash_profile; conda activate qp-fastp-minimap2; export QC_REFERENCE_DB=${PWD}/qp_fastp_minimap2/support_files/databases/; export ENVIRONMENT='source ~/.bash_profile; source activate qp-fastp-minimap2; export QC_REFERENCE_DB=${PWD}/qp_fastp_minimap2/support_files/databases/'" --server-cert $QIITA_SERVER_CERT
 
