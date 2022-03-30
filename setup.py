@@ -10,7 +10,7 @@
 from setuptools import setup
 from glob import glob
 
-__version__ = "2021.01"
+__version__ = "2022.04"
 
 classes = """
     Development Status :: 3 - Alpha
@@ -19,7 +19,7 @@ classes = """
     Topic :: Software Development :: Libraries :: Application Frameworks
     Topic :: Software Development :: Libraries :: Python Modules
     Programming Language :: Python
-    Programming Language :: Python :: 3.6
+    Programming Language :: Python :: 3.9
     Programming Language :: Python :: Implementation :: CPython
     Operating System :: POSIX :: Linux
     Operating System :: MacOS :: MacOS X
