@@ -115,6 +115,26 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
 
 def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     """Creates qsub files for submission of per sample fastp and minimap2
+
+    Parameters
+    ----------
+    files : dict
+        The dictionary of files to process, raw_forward_seqs/raw_reverse_seqs
+    out_dir : str
+        The output directory
+    params : dict
+        The parameter values to run fastp/minimap2
+    prep_info : str
+        The path to prep_info
+    url : str
+        The url to send info to
+    job_id : str
+        The job id
+
+    Returns
+    -------
+    str, str, str
+        The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
     database = None
     if params['reference'] != 'None':
