@@ -1,17 +1,17 @@
-qp-fastp-minimap2 Qiita Plugin
+qp-fastp-bwamem Qiita Plugin
 ==============================
 
 |Build Status| |Coverage Status|
 
-`Qiita <https://github.com/biocore/qiita/>`__ (canonically pronounced *cheetah*)
+`Qiita <https://github.com/qiita-spots/qiita/>`__ (canonically pronounced *cheetah*)
 is an analysis environment for microbiome (and other "comparative -omics")
 datasets.
 
-This package includes the qp-fastp-minimap2 Qiita plugin.
+This package includes the qp-fastp-bwamem Qiita plugin.
 
 How to test this package?
 -------------------------
-In order to test the qp-fastp-minimap2 package, a local
+In order to test the qp-fastp-bwamem package, a local
 installation of Qiita should be running in test mode on the address
 `https://localhost:21174`, with the default test database created in Qiita's
 test suite. Also, if Qiita is running with the default server SSL certificate,

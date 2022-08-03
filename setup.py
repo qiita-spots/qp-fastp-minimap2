@@ -10,7 +10,7 @@
 from setuptools import setup
 from glob import glob
 
-__version__ = "2022.04"
+__version__ = "2022.07"
 
 classes = """
     Development Status :: 3 - Alpha
@@ -30,18 +30,18 @@ with open('README.rst') as f:
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
-setup(name='qp-fastp-minimap2',
+setup(name='qp-fastp-bwamem',
       version=__version__,
       long_description=long_description,
       license="BSD",
-      description='Qiita Plugin: qp-fastp-minimap2',
+      description='Qiita Plugin: qp-fastp-bwamem',
       author="Qiita development team",
       author_email="qiita.help@gmail.com",
-      url='https://github.com/qiita-spots/qp-fastp-minimap2',
+      url='https://github.com/qiita-spots/qp-fastp-bwamem',
       test_suite='nose.collector',
-      packages=['qp_fastp_minimap2'],
-      package_data={'qp_fastp_minimap2': [
-        'support_files/*', 'support_files/databases/*',
+      packages=['qp_fastp_bwamem'],
+      package_data={'qp_fastp_bwamem': [
+        'support_files/*', 'support_files/references/*',
         'support_files/raw_data/*']},
       scripts=glob('scripts/*'),
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
