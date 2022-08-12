@@ -22,40 +22,40 @@ MAX_RUNNING = 8
 
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
-FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
-MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
-SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
+# FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
+# MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {reference} - -a '
+MINIMAP2_BASE = 'minimap2 -a -x sr -t {nprocs} {reference} %s'
+# SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
-FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
-FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
+MINIMAP2_CMD = ' '.join([MINIMAP2_BASE, '%s -o {out_dir}/%s'])
+MINIMAP2_CMD_SINGLE = (f'{FASTP_BASE} -o '
                     '{out_dir}/%s')
-COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
-                f'{SAMTOOLS_BASE} 12 -F 256 -1 '
-                '{out_dir}/%s -2 {out_dir}/%s')
-COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-                       f'{SAMTOOLS_BASE} 4 -0 '
-                       '{out_dir}/%s')
+
+# COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
+#                 f'{SAMTOOLS_BASE} 12 -F 256 -1 '
+#                 '{out_dir}/%s -2 {out_dir}/%s')
+# COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
+#                        f'{SAMTOOLS_BASE} 4 -0 '
+#                        '{out_dir}/%s')
 
 
 def get_dbs_list():
     folder = QC_REFERENCE_DB
-
-    # skip human database
-    return [basename(f) for f in glob(f'{folder}/*.mmi') if 'human' not in f]
+    return [basename(f) for f in glob(f'{folder}/*.fq')]
 
 
-def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
+def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
     """Helper function to generate commands and facilite testing"""
     files = zip_longest(fwd_seqs, rev_seqs)
     if rev_seqs:
-        cmd = FASTP_CMD
-        if database is not None:
-            cmd = COMBINED_CMD
+        # cmd = MINIMAP2_CMD
+        if reference is not None:
+            cmd = MINIMAP2_CMD
     else:
-        cmd = FASTP_CMD_SINGLE
-        if database is not None:
-            cmd = COMBINED_CMD_SINGLE
-    command = cmd.format(nprocs=nprocs, database=database, out_dir=out_dir)
+        # cmd = FASTP_CMD_SINGLE
+        if reference is not None:
+            cmd = MINIMAP2_CMD_SINGLE
+    command = cmd.format(nprocs=nprocs, reference=reference, out_dir=out_dir)
 
     out_files = []
     commands = []
@@ -63,9 +63,13 @@ def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
         fname = basename(fwd_fp)
         out_files.append((f'{out_dir}/{fname}', 'raw_forward_seqs'))
         if rev_fp:
-            rname = basename(rev_fp)
+            # rname = basename(rev_fp)
             out_files.append((f'{out_dir}/{rname}', 'raw_reverse_seqs'))
-            cmd = command % (fwd_fp, rev_fp, fname, rname)
+
+            if reference is not None:
+                cmd = command % (fwd_fp, rev_fp, fname)
+                # cmd = command % (fwd_fp, rev_fp, fname, rname)
+                # only one output file, so i just put in same directory as fwd_fp
         else:
             cmd = command % (fwd_fp, fname)
         commands.append(cmd)
@@ -158,7 +162,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     # we are not going to use it and simply loop over the ordered
     # fwd_seqs/rev_seqs
     commands, out_files = _generate_commands(
-        fwd_seqs, rev_seqs, database, params['threads'], out_dir)
+        fwd_seqs, rev_seqs, reference, params['threads'], out_dir)
 
     # writing the job array details
     details_name = join(out_dir, 'fastp_minimap2.array-details')

@@ -19,7 +19,7 @@ from qp_fastp_minimap2 import plugin
 from qp_fastp_minimap2.utils import plugin_details
 from qp_fastp_minimap2.qp_fastp_minimap2 import (
     get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB,
-    FASTP_CMD, COMBINED_CMD, FASTP_CMD_SINGLE, COMBINED_CMD_SINGLE)
+    MINIMAP2_CMD, MINIMAP2_CMD_SINGLE)
 
 
 class FastpMinimap2Tests(PluginTestCase):
@@ -36,6 +36,7 @@ class FastpMinimap2Tests(PluginTestCase):
         self._clean_up_files.append(out_dir)
 
     def tearDown(self):
+        """Deletes all the files/directories created"""
         for fp in self._clean_up_files:
             if exists(fp):
                 if isdir(fp):
@@ -45,20 +46,27 @@ class FastpMinimap2Tests(PluginTestCase):
 
     def test_get_dbs_list(self):
         dbs = get_dbs_list()
-        self.assertCountEqual(dbs, ['artifacts.mmi', 'empty.mmi'])
+        self.assertCountEqual(dbs, ['genome.fasta'])
 
     def test_generate_commands(self):
-        params = {'database': 'artifacts', 'nprocs': 2,
+        params = {'reference': 'artifacts', 'nprocs': 2,
                   'out_dir': '/foo/bar/output'}
 
         fwd_seqs = ['sz1.fastq.gz', 'sc1.fastq.gz',
                     'sa1.fastq.gz', 'sd1.fastq.gz']
         rev_seqs = ['sz2.fastq.gz', 'sc2.fastq.gz',
                     'sa2.fastq.gz', 'sd2.fastq.gz']
-        obs = _generate_commands(fwd_seqs, rev_seqs, params['database'],
+
+        # runs generate_commands with test params
+        # testing for genome reference with rev_seqs
+        obs = _generate_commands(fwd_seqs, rev_seqs, params['reference'],
                                  params['nprocs'], params['out_dir'])
-        cmd = COMBINED_CMD.format(**params)
-        ecmds = [cmd % (f, r, f, r)
+        
+        # formats the command to generate "truths"
+        cmd = MINIMAP2_CMD.format(**params)
+        
+        # command truths (formats the commands with the fastq sequences)
+        ecmds = [cmd % (f, r, f)
                  for f, r in zip_longest(fwd_seqs, rev_seqs)]
         eof = [(f'{params["out_dir"]}/{f}', 'raw_forward_seqs')
                for f in sorted(fwd_seqs)]
@@ -67,32 +75,32 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
-        params['database'] = None
-        obs = _generate_commands(fwd_seqs, rev_seqs, params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = FASTP_CMD.format(**params)
-        ecmds = [cmd % (f, r, f, r)
-                 for f, r in zip_longest(fwd_seqs, rev_seqs)]
-        self.assertCountEqual(obs[0], ecmds)
-        self.assertCountEqual(obs[1], list(eof))
+        # params['reference'] = None
+        # obs = _generate_commands(fwd_seqs, rev_seqs, params['reference'],
+        #                          params['nprocs'], params['out_dir'])
+        # cmd = MINIMAP2_CMD.format(**params)
+        # ecmds = [cmd % (f, r, f, r)
+        #          for f, r in zip_longest(fwd_seqs, rev_seqs)]
+        # self.assertCountEqual(obs[0], ecmds)
+        # self.assertCountEqual(obs[1], list(eof))
 
-        params['database'] = 'artifacts'
-        obs = _generate_commands(fwd_seqs, [], params['database'],
+        params['reference'] = 'artifacts'
+        obs = _generate_commands(fwd_seqs, [], params['reference'],
                                  params['nprocs'], params['out_dir'])
-        cmd = COMBINED_CMD_SINGLE.format(**params)
+        cmd = MINIMAP2_CMD_SINGLE.format(**params)
         ecmds = [cmd % (f, f) for f in fwd_seqs]
         eof = [(f'{params["out_dir"]}/{f}', 'raw_forward_seqs')
                for f in sorted(fwd_seqs)]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
-        params['database'] = None
-        obs = _generate_commands(fwd_seqs, [], params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = FASTP_CMD_SINGLE.format(**params)
-        ecmds = [cmd % (f, f) for f in fwd_seqs]
-        self.assertCountEqual(obs[0], ecmds)
-        self.assertCountEqual(obs[1], eof)
+        # params['database'] = None
+        # obs = _generate_commands(fwd_seqs, [], params['database'],
+        #                          params['nprocs'], params['out_dir'])
+        # cmd = FASTP_CMD_SINGLE.format(**params)
+        # ecmds = [cmd % (f, f) for f in fwd_seqs]
+        # self.assertCountEqual(obs[0], ecmds)
+        # self.assertCountEqual(obs[1], eof)
 
     def test_fastp_minimap2(self):
         # inserting new prep template
@@ -232,18 +240,14 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
         exp_commands = [
-            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
-            f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
-            f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
-            'samtools fastq -@ 2 -f  12 -F 256 -1 '
-            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
-            f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
-            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
-            f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
-            f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
-            'samtools fastq -@ 2 -f  12 -F 256 -1 '
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
-            f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'{apath}/S22205_S104_L001_R1_001.fastq.gz '
+            f'{apath}/S22205_S104_L001_R2_001.fastq.gz -o'
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz \n',
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'{apath}/S22282_S102_L001_R1_001.fastq.gz '
+            f'{apath}/S22282_S102_L001_R2_001.fastq.gz -o'
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz \n']
         self.assertEqual(commands, exp_commands)
 
     def test_fastp_minimap2_just_fwd(self):
@@ -376,14 +380,12 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
         exp_commands = [
-            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
-            f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
-            '- -a  | samtools fastq -@ 2 -f  4 -0 '
-            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
-            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
-            f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
-            '- -a  | samtools fastq -@ 2 -f  4 -0 '
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'{apath}/S22205_S104_L001_R1_001.fastq.gz -o'
+            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz \n',
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'{apath}/S22282_S102_L001_R1_001.fastq.gz -o'
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz \n']
         self.assertEqual(commands, exp_commands)
 
 
