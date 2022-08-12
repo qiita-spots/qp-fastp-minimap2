@@ -50,7 +50,7 @@ jobs:
 
           # we need to download qiita directly so we have "easy" access to
           # all config files
-          wget https://github.com/biocore/qiita/archive/dev.zip
+          wget https://github.com/qiita-spots/qiita/archive/dev.zip
           unzip dev.zip
 
           # pull out the port so we can modify the configuration file easily
