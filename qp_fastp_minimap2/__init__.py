@@ -14,7 +14,7 @@ from os.path import splitext
 
 THREADS = 15
 
-
+# comment
 # Initialize the plugin
 plugin = QiitaPlugin(**plugin_details)
 
