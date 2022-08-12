@@ -61,10 +61,10 @@ class FastpMinimap2Tests(PluginTestCase):
         # testing for genome reference with rev_seqs
         obs = _generate_commands(fwd_seqs, rev_seqs, params['reference'],
                                  params['nprocs'], params['out_dir'])
-        
+
         # formats the command to generate "truths"
         cmd = MINIMAP2_CMD.format(**params)
-        
+
         # command truths (formats the commands with the fastq sequences)
         ecmds = [cmd % (f, r, f)
                  for f, r in zip_longest(fwd_seqs, rev_seqs)]
