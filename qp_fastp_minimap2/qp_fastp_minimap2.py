@@ -28,8 +28,8 @@ MINIMAP2_BASE = 'minimap2 -a -x sr -t {nprocs} {reference} %s'
 # SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
 MINIMAP2_CMD = ' '.join([MINIMAP2_BASE, '%s -o {out_dir}/%s'])
-MINIMAP2_CMD_SINGLE = (f'{FASTP_BASE} -o '
-                    '{out_dir}/%s')
+MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
+                        '{out_dir}/%s')
 
 # COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
 #                 f'{SAMTOOLS_BASE} 12 -F 256 -1 '
@@ -63,13 +63,13 @@ def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
         fname = basename(fwd_fp)
         out_files.append((f'{out_dir}/{fname}', 'raw_forward_seqs'))
         if rev_fp:
-            # rname = basename(rev_fp)
+            rname = basename(rev_fp)
             out_files.append((f'{out_dir}/{rname}', 'raw_reverse_seqs'))
 
             if reference is not None:
                 cmd = command % (fwd_fp, rev_fp, fname)
                 # cmd = command % (fwd_fp, rev_fp, fname, rname)
-                # only one output file, so i just put in same directory as fwd_fp
+                # only one output file, so i just put in same dir as fwd_fp
         else:
             cmd = command % (fwd_fp, fname)
         commands.append(cmd)
@@ -140,9 +140,9 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     str, str, str
         The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
-    database = None
+    reference = None
     if params['reference'] != 'None':
-        database = [join(QC_REFERENCE_DB, f'{db}')
+        reference = [join(QC_REFERENCE_DB, f'{db}')
                     for db in get_dbs_list()
                     if params['reference'] in db][0]
 
