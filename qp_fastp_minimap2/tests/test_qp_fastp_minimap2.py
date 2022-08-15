@@ -49,7 +49,7 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(dbs, ['genome.fasta'])
 
     def test_generate_commands(self):
-        params = {'reference': 'artifacts', 'nprocs': 2,
+        params = {'nprocs': 2, 'reference': 'artifacts',
                   'out_dir': '/foo/bar/output'}
 
         fwd_seqs = ['sz1.fastq.gz', 'sc1.fastq.gz',
