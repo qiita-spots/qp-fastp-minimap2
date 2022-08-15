@@ -144,7 +144,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     reference = None
     if params['reference'] != 'None':
         list = get_dbs_list()
-        print(list)
+        print(params['reference'])
         reference = [join(QC_REFERENCE_DB, f'{db}')
                      for db in list
                      if params['reference'] in db][0]
