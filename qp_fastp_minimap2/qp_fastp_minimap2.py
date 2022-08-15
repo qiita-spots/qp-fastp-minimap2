@@ -45,8 +45,10 @@ def get_dbs_list():
     if not list:
         print("empty list")
     else:
-        print("something else si wrong")
+        print("hi")
+        print(list)
     return list
+
 
 def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
     """Helper function to generate commands and facilite testing"""
