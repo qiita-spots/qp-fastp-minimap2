@@ -46,7 +46,8 @@ def get_dbs_list():
         print("empty list")
     else:
         print("hi")
-        print(list)
+        for i in list:
+            print(i)
     return list
 
 
