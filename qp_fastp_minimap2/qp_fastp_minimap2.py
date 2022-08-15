@@ -29,7 +29,7 @@ MINIMAP2_BASE = 'minimap2 -a -x sr -t {nprocs} {reference} %s'
 
 MINIMAP2_CMD = ' '.join([MINIMAP2_BASE, '%s -o {out_dir}/%s'])
 MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
-                      '{out_dir}/%s')
+                       '{out_dir}/%s')
 
 # COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
 #                 f'{SAMTOOLS_BASE} 12 -F 256 -1 '
@@ -41,7 +41,8 @@ MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
 
 def get_dbs_list():
     folder = QC_REFERENCE_DB
-    return [basename(f) for f in glob(f'{folder}/*.fasta')]
+    print(folder)
+    return [basename(f) for f in glob(f'{folder}/*.fasta') if 'human' not in f]
 
 
 def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
@@ -143,8 +144,8 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     reference = None
     if params['reference'] != 'None':
         reference = [join(QC_REFERENCE_DB, f'{db}')
-                        for db in get_dbs_list()
-                        if params['reference'] in db][0]
+                     for db in get_dbs_list()
+                     if params['reference'] in db][0]
 
     fwd_seqs = sorted(files['raw_forward_seqs'])
     if 'raw_reverse_seqs' in files:
