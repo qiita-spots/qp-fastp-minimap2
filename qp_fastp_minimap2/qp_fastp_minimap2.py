@@ -42,12 +42,6 @@ MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
 def get_dbs_list():
     folder = QC_REFERENCE_DB
     list = [basename(f) for f in glob(f'{folder}/*.fasta') if 'human' not in f]
-    if not list:
-        print("empty list")
-    else:
-        print("hi")
-        for i in list:
-            print(i)
     return list
 
 
@@ -149,8 +143,10 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     """
     reference = None
     if params['reference'] != 'None':
+        list = get_dbs_list()
+        print(list)
         reference = [join(QC_REFERENCE_DB, f'{db}')
-                     for db in get_dbs_list()
+                     for db in list
                      if params['reference'] in db][0]
 
     fwd_seqs = sorted(files['raw_forward_seqs'])
