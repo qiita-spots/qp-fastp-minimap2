@@ -41,9 +41,12 @@ MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
 
 def get_dbs_list():
     folder = QC_REFERENCE_DB
-    print(folder)
-    return [basename(f) for f in glob(f'{folder}/*.fasta') if 'human' not in f]
-
+    list = [basename(f) for f in glob(f'{folder}/*.fasta') if 'human' not in f]
+    if not list:
+        print("empty list")
+    else:
+        print("something else si wrong")
+    return list
 
 def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
     """Helper function to generate commands and facilite testing"""
