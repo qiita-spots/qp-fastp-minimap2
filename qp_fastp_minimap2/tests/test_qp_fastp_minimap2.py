@@ -31,7 +31,7 @@ class FastpMinimap2Tests(PluginTestCase):
         self.out_dir = out_dir
         self.dbs = get_dbs_list()
         self.db_path = QC_REFERENCE_DB
-        self.params = {'reference': 'artifacts', 'threads': 2}
+        self.params = {'reference': 'genome', 'threads': 2}
         self._clean_up_files = []
         self._clean_up_files.append(out_dir)
 
@@ -84,7 +84,7 @@ class FastpMinimap2Tests(PluginTestCase):
         # self.assertCountEqual(obs[0], ecmds)
         # self.assertCountEqual(obs[1], list(eof))
 
-        params['reference'] = 'artifacts'
+        params['reference'] = 'genome'
         obs = _generate_commands(fwd_seqs, [], params['reference'],
                                  params['nprocs'], params['out_dir'])
         cmd = MINIMAP2_CMD_SINGLE.format(**params)
