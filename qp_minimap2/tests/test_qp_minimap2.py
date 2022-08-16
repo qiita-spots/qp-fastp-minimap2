@@ -29,7 +29,7 @@ class Minimap2Tests(PluginTestCase):
         out_dir = mkdtemp()
         self.maxDiff = None
         self.out_dir = out_dir
-        self.dbs = get_dbs_list()
+        self.dbs = get_ref_list()
         self.db_path = QC_REFERENCES
         self.params = {'reference': 'genome', 'threads': 2}
         self._clean_up_files = []
@@ -84,7 +84,6 @@ class Minimap2Tests(PluginTestCase):
                for f in sorted(fwd_seqs)]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
-
 
     def test_minimap2(self):
         # inserting new prep template
