@@ -247,7 +247,7 @@ class FastpMinimap2Tests(PluginTestCase):
             f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
             f'{apath}/S22282_S102_L001_R1_001.fastq.gz '
             f'{apath}/S22282_S102_L001_R2_001.fastq.gz -o '
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz\n']
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
         self.assertEqual(commands, exp_commands)
 
     def test_fastp_minimap2_just_fwd(self):
@@ -385,7 +385,7 @@ class FastpMinimap2Tests(PluginTestCase):
             f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
             f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
             f'{apath}/S22282_S102_L001_R1_001.fastq.gz -o '
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz\n']
+            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
         self.assertEqual(commands, exp_commands)
 
 
