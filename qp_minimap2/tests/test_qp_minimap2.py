@@ -104,7 +104,7 @@ class Minimap2Tests(PluginTestCase):
         fp1_2 = join(in_dir, 'S22205_S104_L001_R2_001.fastq.gz')
         fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
-        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
+        source_dir = 'qp_minimap2/support_files/raw_data'
         copyfile(f'{source_dir}/S22205_S104_L001_R1_001.fastq.gz', fp1_1)
         copyfile(f'{source_dir}/S22205_S104_L001_R2_001.fastq.gz', fp1_2)
         copyfile(f'{source_dir}/S22282_S102_L001_R1_001.fastq.gz', fp2_1)
