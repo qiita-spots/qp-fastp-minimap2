@@ -248,6 +248,10 @@ class FastpMinimap2Tests(PluginTestCase):
             f'{apath}/S22282_S102_L001_R1_001.fastq.gz '
             f'{apath}/S22282_S102_L001_R2_001.fastq.gz -o '
             f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
+        print("actual:")
+        print(commands)
+        print("expected:")
+        print(exp_commands)
         self.assertEqual(commands, exp_commands)
 
     def test_fastp_minimap2_just_fwd(self):
