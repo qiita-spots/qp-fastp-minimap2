@@ -59,7 +59,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         # runs generate_commands with test params
         # testing for genome reference with rev_seqs
-        obs = _generate_commands(fwd_seqs, rev_seqs, params['nprocs'], 
+        obs = _generate_commands(fwd_seqs, rev_seqs, params['nprocs'],
                                  params['reference'], params['out_dir'])
 
         # formats the command to generate "truths"
@@ -85,7 +85,7 @@ class FastpMinimap2Tests(PluginTestCase):
         # self.assertCountEqual(obs[1], list(eof))
 
         params['reference'] = 'genome'
-        obs = _generate_commands(fwd_seqs, [], params['nprocs'], 
+        obs = _generate_commands(fwd_seqs, [], params['nprocs'],
                                  params['reference'],params['out_dir'])
         cmd = MINIMAP2_CMD_SINGLE.format(**params)
         ecmds = [cmd % (f, f) for f in fwd_seqs]
