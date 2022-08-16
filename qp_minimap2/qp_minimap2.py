@@ -20,28 +20,18 @@ FINISH_MEMORY = '10g'
 FINISH_WALLTIME = '10:00:00'
 MAX_RUNNING = 8
 
-QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
+QC_REFERENCES = environ["QC_REFERENCES"]
 
-# FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
-# MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {reference} - -a '
 MINIMAP2_BASE = 'minimap2 -a -x sr -t {nprocs} {reference} %s'
-# SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
 MINIMAP2_CMD = ' '.join([MINIMAP2_BASE, '%s -o {out_dir}/%s'])
 MINIMAP2_CMD_SINGLE = (f'{MINIMAP2_BASE} -o '
                        '{out_dir}/%s')
 
-# COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
-#                 f'{SAMTOOLS_BASE} 12 -F 256 -1 '
-#                 '{out_dir}/%s -2 {out_dir}/%s')
-# COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-#                        f'{SAMTOOLS_BASE} 4 -0 '
-#                        '{out_dir}/%s')
 
-
-def get_dbs_list():
-    folder = QC_REFERENCE_DB
-    list = [basename(f) for f in glob(f'{folder}/*.fasta') if 'human' not in f]
+def get_ref_list():
+    folder = QC_REFERENCES
+    list = [basename(f) for f in glob(f'{folder}/*.fasta')]
     return list
 
 
@@ -49,13 +39,9 @@ def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
     """Helper function to generate commands and facilite testing"""
     files = zip_longest(fwd_seqs, rev_seqs)
     if rev_seqs:
-        # cmd = MINIMAP2_CMD
-        if reference is not None:
-            cmd = MINIMAP2_CMD
+        cmd = MINIMAP2_CMD
     else:
-        # cmd = FASTP_CMD_SINGLE
-        if reference is not None:
-            cmd = MINIMAP2_CMD_SINGLE
+        cmd = MINIMAP2_CMD_SINGLE
     command = cmd.format(nprocs=nprocs, reference=reference, out_dir=out_dir)
 
     out_files = []
@@ -69,7 +55,6 @@ def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
 
             if reference is not None:
                 cmd = command % (fwd_fp, rev_fp, fname)
-                # cmd = command % (fwd_fp, rev_fp, fname, rname)
                 # only one output file, so i just put in same dir as fwd_fp
         else:
             cmd = command % (fwd_fp, fname)
@@ -78,8 +63,8 @@ def _generate_commands(fwd_seqs, rev_seqs, nprocs, reference, out_dir):
     return commands, out_files
 
 
-def fastp_minimap2(qclient, job_id, parameters, out_dir):
-    """Run fastp and minimap2 with the given parameters
+def minimap2(qclient, job_id, parameters, out_dir):
+    """Run minimap2 with the given parameters
 
     Parameters
     ----------
@@ -99,7 +84,7 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     """
 
     qclient.update_job_step(
-        job_id, "Step 3 of 4: Finishing fastp and minimap2")
+        job_id, "Step 3 of 4: Finishing minimap2")
 
     ainfo = []
     # Generates 2 artifacts: one for the ribosomal
@@ -118,8 +103,8 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     return True, ainfo, ""
 
 
-def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
-    """Creates qsub files for submission of per sample fastp and minimap2
+def minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
+    """Creates qsub files for submission of per sample minimap2
 
     Parameters
     ----------
@@ -128,7 +113,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     out_dir : str
         The output directory
     params : dict
-        The parameter values to run fastp/minimap2
+        The parameter values to run minimap2
     prep_info : str
         The path to prep_info
     url : str
@@ -143,9 +128,9 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     """
     reference = None
     if params['reference'] != 'None':
-        list = get_dbs_list()
+        list = get_ref_list()
         print(params['reference'])
-        reference = [join(QC_REFERENCE_DB, f'{db}')
+        reference = [join(QC_REFERENCES, f'{db}')
                      for db in list
                      if params['reference'] in db][0]
 
@@ -168,7 +153,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
         fwd_seqs, rev_seqs, params['threads'], reference, out_dir)
 
     # writing the job array details
-    details_name = join(out_dir, 'fastp_minimap2.array-details')
+    details_name = join(out_dir, 'minimap2.array-details')
     with open(details_name, 'w') as details:
         details.write('\n'.join(commands))
     n_jobs = len(commands)
@@ -218,7 +203,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
              'date',  # start time
              'hostname',  # executing system
              'echo $PBS_JOBID',
-             f'finish_qp_fastp_minimap2 {url} {job_id} {out_dir}\n'
+             f'finish_qp_minimap2 {url} {job_id} {out_dir}\n'
              "date"]
     finish_qsub_fp = join(out_dir, f'{job_id}.finish.qsub')
     with open(finish_qsub_fp, 'w') as out:

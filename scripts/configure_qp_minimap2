@@ -10,19 +10,19 @@
 
 import click
 
-from qp_fastp_minimap2 import plugin
+from qp_minimap2 import plugin
 
 
 @click.command()
 @click.option('--env-script', prompt='Environment script',
-              default='source activate qp-fastp-minimap2')
+              default='source activate qp-minimap2')
 @click.option('--server-cert', prompt='Server certificate', default='None')
 def config(env_script, server_cert):
     """Generates the Qiita configuration files"""
     if server_cert == 'None':
         server_cert = None
     plugin.generate_config(
-        env_script, 'start_qp_fastp_minimap2', server_cert=server_cert)
+        env_script, 'start_qp_minimap2', server_cert=server_cert)
 
 
 if __name__ == '__main__':

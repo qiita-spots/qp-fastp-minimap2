@@ -15,9 +15,9 @@ from configparser import ConfigParser
 from qiita_client import QiitaClient
 
 
-plugin_details = {'name': 'qp-fastp-minimap2',
-                  'version': '2022.04',
-                  'description': 'fastp + minimap2 pipeline'}
+plugin_details = {'name': 'qp-minimap2',
+                  'version': '2022.08',
+                  'description': 'minimap2 for COVID-19 pipeline'}
 
 
 def client_connect(url):

@@ -1,2 +1,2 @@
-# qp-fastp-minimap2
-Fast QC and host filtering for Whole Genome Sequencing and Metatranscriptomic sequencing 
+# qp-minimap2
+minimap2 plugin for COVID-19 pipeline, based on existing qp-fastp-minimap2 plugin

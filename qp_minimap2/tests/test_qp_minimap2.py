@@ -15,14 +15,14 @@ from json import dumps
 from itertools import zip_longest
 from functools import partial
 
-from qp_fastp_minimap2 import plugin
-from qp_fastp_minimap2.utils import plugin_details
-from qp_fastp_minimap2.qp_fastp_minimap2 import (
-    get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB,
+from qp_minimap2 import plugin
+from qp_minimap2.utils import plugin_details
+from qp_minimap2.qp_minimap2 import (
+    get_ref_list, _generate_commands, minimap2_to_array, QC_REFERENCES,
     MINIMAP2_CMD, MINIMAP2_CMD_SINGLE)
 
 
-class FastpMinimap2Tests(PluginTestCase):
+class Minimap2Tests(PluginTestCase):
     def setUp(self):
         plugin("https://localhost:21174", 'register', 'ignored')
 
@@ -30,7 +30,7 @@ class FastpMinimap2Tests(PluginTestCase):
         self.maxDiff = None
         self.out_dir = out_dir
         self.dbs = get_dbs_list()
-        self.db_path = QC_REFERENCE_DB
+        self.db_path = QC_REFERENCES
         self.params = {'reference': 'genome', 'threads': 2}
         self._clean_up_files = []
         self._clean_up_files.append(out_dir)
@@ -44,8 +44,8 @@ class FastpMinimap2Tests(PluginTestCase):
                 else:
                     remove(fp)
 
-    def test_get_dbs_list(self):
-        dbs = get_dbs_list()
+    def test_get_ref_list(self):
+        dbs = get_ref_list()
         self.assertCountEqual(dbs, ['genome.fasta'])
 
     def test_generate_commands(self):
@@ -75,15 +75,6 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
-        # params['reference'] = None
-        # obs = _generate_commands(fwd_seqs, rev_seqs, params['reference'],
-        #                          params['nprocs'], params['out_dir'])
-        # cmd = MINIMAP2_CMD.format(**params)
-        # ecmds = [cmd % (f, r, f, r)
-        #          for f, r in zip_longest(fwd_seqs, rev_seqs)]
-        # self.assertCountEqual(obs[0], ecmds)
-        # self.assertCountEqual(obs[1], list(eof))
-
         params['reference'] = 'genome'
         obs = _generate_commands(fwd_seqs, [], params['nprocs'],
                                  params['reference'], params['out_dir'])
@@ -94,15 +85,8 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
-        # params['database'] = None
-        # obs = _generate_commands(fwd_seqs, [], params['database'],
-        #                          params['nprocs'], params['out_dir'])
-        # cmd = FASTP_CMD_SINGLE.format(**params)
-        # ecmds = [cmd % (f, f) for f in fwd_seqs]
-        # self.assertCountEqual(obs[0], ecmds)
-        # self.assertCountEqual(obs[1], eof)
 
-    def test_fastp_minimap2(self):
+    def test_minimap2(self):
         # inserting new prep template
         prep_info_dict = {
             'SKB8.640193': {'run_prefix': 'S22205_S104'},
@@ -164,7 +148,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         url = 'this-is-my-url'
 
-        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+        main_qsub_fp, finish_qsub_fp, out_files_fp = minimap2_to_array(
             artifact_info['files'], out_dir, self.params, prep_file,
             url, job_id)
 
@@ -179,7 +163,7 @@ class FastpMinimap2Tests(PluginTestCase):
             finish_qsub = f.readlines()
         with open(out_files_fp) as f:
             out_files = f.readlines()
-        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+        with open(f'{out_dir}/minimap2.array-details') as f:
             commands = f.readlines()
 
         exp_main_qsub = [
@@ -195,13 +179,13 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            'source ~/.bash_profile; source activate qp-minimap2; '
+            f'export QC_REFERENCES={QC_REFERENCES}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
             'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
-            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            f'cmd=$(head -n $step {out_dir}/minimap2.array-details | '
             'tail -n 1)\n',
             'eval $cmd\n',
             'set +e\n',
@@ -220,12 +204,12 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            'source ~/.bash_profile; source activate qp-minimap2; '
+            f'export QC_REFERENCES={QC_REFERENCES}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
-            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            f'finish_qp_minimap2 this-is-my-url {job_id} {out_dir}\n',
             'date\n']
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
@@ -240,21 +224,17 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
         exp_commands = [
-            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCES}genome.fasta '
             f'{apath}/S22205_S104_L001_R1_001.fastq.gz '
             f'{apath}/S22205_S104_L001_R2_001.fastq.gz -o '
             f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
-            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCES}genome.fasta '
             f'{apath}/S22282_S102_L001_R1_001.fastq.gz '
             f'{apath}/S22282_S102_L001_R2_001.fastq.gz -o '
             f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
-        print("actual:")
-        print(commands)
-        print("expected:")
-        print(exp_commands)
         self.assertEqual(commands, exp_commands)
 
-    def test_fastp_minimap2_just_fwd(self):
+    def test_minimap2_just_fwd(self):
         # inserting new prep template
         prep_info_dict = {
             'SKB8.640193': {'run_prefix': 'S22205_S104'},
@@ -271,7 +251,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         fp1_1 = join(in_dir, 'S22205_S104_L001_R1_001.fastq.gz')
         fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
-        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
+        source_dir = 'qp_minimap2/support_files/raw_data'
         copyfile(f'{source_dir}/S22205_S104_L001_R1_001.fastq.gz', fp1_1)
         copyfile(f'{source_dir}/S22282_S102_L001_R1_001.fastq.gz', fp2_1)
 
@@ -310,7 +290,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         url = 'this-is-my-url'
 
-        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+        main_qsub_fp, finish_qsub_fp, out_files_fp = minimap2_to_array(
             artifact_info['files'], out_dir, self.params, prep_file,
             url, job_id)
 
@@ -325,7 +305,7 @@ class FastpMinimap2Tests(PluginTestCase):
             finish_qsub = f.readlines()
         with open(out_files_fp) as f:
             out_files = f.readlines()
-        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+        with open(f'{out_dir}/minimap2.array-details') as f:
             commands = f.readlines()
 
         exp_main_qsub = [
@@ -341,13 +321,13 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            'source ~/.bash_profile; source activate qp-minimap2; '
+            f'export QC_REFERENCES={QC_REFERENCES}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
             'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
-            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            f'cmd=$(head -n $step {out_dir}/minimap2.array-details | '
             'tail -n 1)\n',
             'eval $cmd\n',
             'set +e\n',
@@ -366,12 +346,12 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            'source ~/.bash_profile; source activate qp-minimap2; '
+            f'export QC_REFERENCES={QC_REFERENCES}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
-            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            f'finish_qp_minimap2 this-is-my-url {job_id} {out_dir}\n',
             'date\n']
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
@@ -384,10 +364,10 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
         exp_commands = [
-            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCES}genome.fasta '
             f'{apath}/S22205_S104_L001_R1_001.fastq.gz -o '
             f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
-            f'minimap2 -a -x sr -t 2 {QC_REFERENCE_DB}genome.fasta '
+            f'minimap2 -a -x sr -t 2 {QC_REFERENCES}genome.fasta '
             f'{apath}/S22282_S102_L001_R1_001.fastq.gz -o '
             f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']
         self.assertEqual(commands, exp_commands)
