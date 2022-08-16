@@ -165,7 +165,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     # we are not going to use it and simply loop over the ordered
     # fwd_seqs/rev_seqs
     commands, out_files = _generate_commands(
-        fwd_seqs, rev_seqs, reference, params['threads'], out_dir)
+        fwd_seqs, rev_seqs, params['threads'], reference, out_dir)
 
     # writing the job array details
     details_name = join(out_dir, 'fastp_minimap2.array-details')
