@@ -39,7 +39,7 @@ def get_dbs_list():
     folder = QC_REFERENCE_DB
 
     # skip human database
-    return [basename(f) for f in glob(f'{folder}/*.mmi') if 'human' not in f]
+    return [basename(f) for f in glob(f'{folder}/*.bed')]
 
 
 def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):

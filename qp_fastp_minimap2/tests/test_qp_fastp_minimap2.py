@@ -42,6 +42,8 @@ class FastpMinimap2Tests(PluginTestCase):
                     rmtree(fp)
                 else:
                     remove(fp)
+
+                    
 '''
     def test_get_dbs_list(self):
         dbs = get_dbs_list()
