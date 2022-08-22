@@ -14,7 +14,7 @@ from tempfile import mkdtemp
 from json import dumps
 from itertools import zip_longest
 from functools import partial
-
+import tarfile
 from qp_ivar_trim import plugin
 from qp_ivar_trim.utils import plugin_details
 from qp_ivar_trim.qp_ivar_trim import (
@@ -82,7 +82,9 @@ class IvarTrimTests(PluginTestCase):
         # inserting artifacts
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
-
+        file = tarfile.open('/qp_ivar_trim/support_file/tar_file/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
+        file.extractall('/qp_ivar_trim/support_file/raw_data')
+        
         fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
