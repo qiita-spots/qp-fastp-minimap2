@@ -44,11 +44,11 @@ def get_dbs_list():
     return [basename(f) for f in glob(f'{folder}/*.bed')]
 
 
-def _generate_commands(bam_file, database, nprocs, out_dir):
+def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
     files = bam_file
     cmd = IVAR_TRIM_CMD
-    command = cmd.format(nprocs=nprocs, database=database, out_dir=out_dir)
+    command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
 
     out_files = []
     commands = []
