@@ -88,7 +88,7 @@ class FastpMinimap2Tests(PluginTestCase):
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
-        source_dir = 'qp_ivar_trim/support_files/raw_data'
+        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
         copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam',
                  fp1_1)
         copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam',
