@@ -15,9 +15,9 @@ from configparser import ConfigParser
 from qiita_client import QiitaClient
 
 
-plugin_details = {'name': 'qp-fastp-minimap2',
+plugin_details = {'name': 'qp-ivar-trim',
                   'version': '2022.04',
-                  'description': 'fastp + minimap2 pipeline'}
+                  'description': 'ivar trim pipeline'}
 
 
 def client_connect(url):

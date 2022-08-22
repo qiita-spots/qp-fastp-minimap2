@@ -22,19 +22,8 @@ MAX_RUNNING = 8
 
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
-FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
-MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
-# SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
-
 IVAR_TRIM_CMD = ' '.join([IVAR_TRIM_BASE, '-p {out_dir}/%s'])
-FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
-FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
-                    '{out_dir}/%s')
-COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
-                '{out_dir}/%s -2 {out_dir}/%s')
-COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-                       '{out_dir}/%s')
 
 
 def get_dbs_list():
@@ -61,8 +50,8 @@ def _generate_commands(bam_file, primer, nprocs, out_dir):
     return commands, out_files
 
 
-def fastp_minimap2(qclient, job_id, parameters, out_dir):
-    """Run fastp and minimap2 with the given parameters
+def ivar_trim(qclient, job_id, parameters, out_dir):
+    """Run ivar trim with the given parameters
 
     Parameters
     ----------
@@ -82,7 +71,7 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     """
 
     qclient.update_job_step(
-        job_id, "Step 3 of 4: Finishing fastp and minimap2")
+        job_id, "Step 3 of 4: Finishing ivar trim")
 
     ainfo = []
     # Generates 2 artifacts: one for the ribosomal
@@ -101,7 +90,7 @@ def fastp_minimap2(qclient, job_id, parameters, out_dir):
     return True, ainfo, ""
 
 
-def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
+def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     """Creates qsub files for submission of per sample fastp and minimap2
 
     Parameters
@@ -111,7 +100,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     out_dir : str
         The output directory
     params : dict
-        The parameter values to run fastp/minimap2
+        The parameter values to run ivar trim
     prep_info : str
         The path to prep_info
     url : str

@@ -15,14 +15,13 @@ from json import dumps
 from itertools import zip_longest
 from functools import partial
 
-from qp_fastp_minimap2 import plugin
-from qp_fastp_minimap2.utils import plugin_details
-from qp_fastp_minimap2.qp_fastp_minimap2 import (
-    get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB, IVAR_TRIM_CMD,
-    FASTP_CMD, COMBINED_CMD, FASTP_CMD_SINGLE, COMBINED_CMD_SINGLE)
+from qp_ivar_trim import plugin
+from qp_ivar_trim.utils import plugin_details
+from qp_ivar_trim.qp_ivar_trim import (
+    get_dbs_list, _generate_commands, ivar_trim_to_array, QC_REFERENCE_DB, IVAR_TRIM_CMD)
 
 
-class FastpMinimap2Tests(PluginTestCase):
+class IvarTrimTests(PluginTestCase):
     def setUp(self):
         plugin("https://localhost:21174", 'register', 'ignored')
 
@@ -70,7 +69,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
 
 
-    def test_fastp_minimap2(self):
+    def test_ivar_trim(self):
         # inserting new prep template
         prep_info_dict = {
             'SKB8.640193': {'run_prefix': 'CALM_SEP_001970_03'}}
@@ -88,7 +87,7 @@ class FastpMinimap2Tests(PluginTestCase):
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
-        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
+        source_dir = 'qp_ivar_trim/support_files/raw_data'
         copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam',
                  fp1_1)
         copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam',
@@ -96,9 +95,9 @@ class FastpMinimap2Tests(PluginTestCase):
 
         data = {
             'filepaths': dumps([
-                (fp1_1, 'bam'),
-                (fp1_2, 'bam')]),
-            'type': "per_sample_FASTQ",
+                (fp1_1, 'sorted_bam'),
+                (fp1_2, 'sorted_bam')]),
+            'type': "per_sample_BAM",
             'name': "Test artifact",
             'prep': pid}
         aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
@@ -129,7 +128,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         url = 'this-is-my-url'
 
-        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+        main_qsub_fp, finish_qsub_fp, out_files_fp = ivar_trim_to_array(
             artifact_info['files'], out_dir, self.params, prep_file,
             url, job_id)
 
@@ -144,7 +143,7 @@ class FastpMinimap2Tests(PluginTestCase):
             finish_qsub = f.readlines()
         with open(out_files_fp) as f:
             out_files = f.readlines()
-        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+        with open(f'{out_dir}/ivar_trim.array-details') as f:
             commands = f.readlines()
 
         exp_main_qsub = [
@@ -160,13 +159,13 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'source ~/.bash_profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
             'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
-            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            f'cmd=$(head -n $step {out_dir}/ivar_trim.array-details | '
             'tail -n 1)\n',
             'eval $cmd\n',
             'set +e\n',
@@ -185,12 +184,12 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'source ~/.bash_profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
-            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            f'finish_qp_ivar_trim this-is-my-url {job_id} {out_dir}\n',
             'date\n']
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
@@ -217,7 +216,7 @@ class FastpMinimap2Tests(PluginTestCase):
         ]
         self.assertEqual(commands, exp_commands)
 '''
-    def test_fastp_minimap2_just_fwd(self):
+    def test_ivar_trim_just_fwd(self):
         # inserting new prep template
         prep_info_dict = {
             'SKB8.640193': {'run_prefix': 'S22205_S104'},
@@ -234,7 +233,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         fp1_1 = join(in_dir, 'S22205_S104_L001_R1_001.fastq.gz')
         fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
-        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
+        source_dir = 'qp_ivar_trim/support_files/raw_data'
         copyfile(f'{source_dir}/S22205_S104_L001_R1_001.fastq.gz', fp1_1)
         copyfile(f'{source_dir}/S22282_S102_L001_R1_001.fastq.gz', fp2_1)
 
@@ -273,7 +272,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         url = 'this-is-my-url'
 
-        main_qsub_fp, finish_qsub_fp, out_files_fp = fastp_minimap2_to_array(
+        main_qsub_fp, finish_qsub_fp, out_files_fp = ivar_trim_to_array(
             artifact_info['files'], out_dir, self.params, prep_file,
             url, job_id)
 
@@ -288,7 +287,7 @@ class FastpMinimap2Tests(PluginTestCase):
             finish_qsub = f.readlines()
         with open(out_files_fp) as f:
             out_files = f.readlines()
-        with open(f'{out_dir}/fastp_minimap2.array-details') as f:
+        with open(f'{out_dir}/ivar_trim.array-details') as f:
             commands = f.readlines()
 
         exp_main_qsub = [
@@ -304,13 +303,13 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'source ~/.bash_profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
             'offset=${PBS_ARRAYID}\n', 'step=$(( $offset - 0 ))\n',
-            f'cmd=$(head -n $step {out_dir}/fastp_minimap2.array-details | '
+            f'cmd=$(head -n $step {out_dir}/ivar_trim.array-details | '
             'tail -n 1)\n',
             'eval $cmd\n',
             'set +e\n',
@@ -329,12 +328,12 @@ class FastpMinimap2Tests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-fastp-minimap2; '
+            'source ~/.bash_profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
-            f'finish_qp_fastp_minimap2 this-is-my-url {job_id} {out_dir}\n',
+            f'finish_qp_ivar_trim this-is-my-url {job_id} {out_dir}\n',
             'date\n']
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
