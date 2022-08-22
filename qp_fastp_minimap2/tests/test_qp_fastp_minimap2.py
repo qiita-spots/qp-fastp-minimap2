@@ -49,7 +49,7 @@ class FastpMinimap2Tests(PluginTestCase):
         dbs = get_dbs_list()
         self.assertCountEqual(dbs, ['artifacts.mmi', 'empty.mmi'])
 
-def test_generate_commands(self):
+    def test_generate_commands(self):
         params = {'nprocs': 5,
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
