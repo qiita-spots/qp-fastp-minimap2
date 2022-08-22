@@ -18,7 +18,7 @@ from functools import partial
 from qp_fastp_minimap2 import plugin
 from qp_fastp_minimap2.utils import plugin_details
 from qp_fastp_minimap2.qp_fastp_minimap2 import (
-    get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB,
+    get_dbs_list, _generate_commands, fastp_minimap2_to_array, QC_REFERENCE_DB, IVAR_TRIM_CMD,
     FASTP_CMD, COMBINED_CMD, FASTP_CMD_SINGLE, COMBINED_CMD_SINGLE)
 
 
@@ -44,58 +44,32 @@ class FastpMinimap2Tests(PluginTestCase):
                     remove(fp)
 
                     
-'''
+
     def test_get_dbs_list(self):
         dbs = get_dbs_list()
         self.assertCountEqual(dbs, ['artifacts.mmi', 'empty.mmi'])
 
-    def test_generate_commands(self):
-        params = {'database': 'artifacts', 'nprocs': 2,
+def test_generate_commands(self):
+        params = {'nprocs': 5,
+                  'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
-
-        fwd_seqs = ['sz1.fastq.gz', 'sc1.fastq.gz',
-                    'sa1.fastq.gz', 'sd1.fastq.gz']
-        rev_seqs = ['sz2.fastq.gz', 'sc2.fastq.gz',
-                    'sa2.fastq.gz', 'sd2.fastq.gz']
-        obs = _generate_commands(fwd_seqs, rev_seqs, params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = COMBINED_CMD.format(**params)
-        ecmds = [cmd % (f, r, f, r)
-                 for f, r in zip_longest(fwd_seqs, rev_seqs)]
-        eof = [(f'{params["out_dir"]}/{f}', 'raw_forward_seqs')
-               for f in sorted(fwd_seqs)]
-        for f in sorted(rev_seqs):
-            eof.append((f'{params["out_dir"]}/{f}', 'raw_reverse_seqs'))
+        # need to change these to bam
+        bam_file = ['untrimmed1.sorted.bam',
+                    'untrimmed2.sorted.bam']
+        obs = _generate_commands(bam_file, 
+                                 params['primer'], 
+                                 params['nprocs'],
+                                 params['out_dir'])
+        cmd = IVAR_TRIM_CMD.format(**params)
+        ecmds = [cmd % (bam, bam)
+                 for bam in bam_file]
+        eof = [(f'{params["out_dir"]}/{bam}', 'trimmed')
+               for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
-        params['database'] = None
-        obs = _generate_commands(fwd_seqs, rev_seqs, params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = FASTP_CMD.format(**params)
-        ecmds = [cmd % (f, r, f, r)
-                 for f, r in zip_longest(fwd_seqs, rev_seqs)]
-        self.assertCountEqual(obs[0], ecmds)
-        self.assertCountEqual(obs[1], list(eof))
 
-        params['database'] = 'artifacts'
-        obs = _generate_commands(fwd_seqs, [], params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = COMBINED_CMD_SINGLE.format(**params)
-        ecmds = [cmd % (f, f) for f in fwd_seqs]
-        eof = [(f'{params["out_dir"]}/{f}', 'raw_forward_seqs')
-               for f in sorted(fwd_seqs)]
-        self.assertCountEqual(obs[0], ecmds)
-        self.assertCountEqual(obs[1], eof)
-
-        params['database'] = None
-        obs = _generate_commands(fwd_seqs, [], params['database'],
-                                 params['nprocs'], params['out_dir'])
-        cmd = FASTP_CMD_SINGLE.format(**params)
-        ecmds = [cmd % (f, f) for f in fwd_seqs]
-        self.assertCountEqual(obs[0], ecmds)
-        self.assertCountEqual(obs[1], eof)
-
+'''
     def test_fastp_minimap2(self):
         # inserting new prep template
         prep_info_dict = {
