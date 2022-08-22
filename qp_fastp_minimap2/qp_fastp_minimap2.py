@@ -24,8 +24,10 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
 MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
+IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
 # SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
+IVAR_TRIM_CMD = ' '.join([IVAR_TRIM_BASE, '-p {out_dir}/%s'])
 FASTP_CMD = ' '.join([FASTP_BASE, '-I %s -o {out_dir}/%s -O {out_dir}/%s'])
 FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
                     '{out_dir}/%s')
@@ -42,30 +44,18 @@ def get_dbs_list():
     return [basename(f) for f in glob(f'{folder}/*.bed')]
 
 
-def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
+def _generate_commands(bam_file, database, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    files = zip_longest(fwd_seqs, rev_seqs)
-    if rev_seqs:
-        cmd = FASTP_CMD
-        if database is not None:
-            cmd = COMBINED_CMD
-    else:
-        cmd = FASTP_CMD_SINGLE
-        if database is not None:
-            cmd = COMBINED_CMD_SINGLE
+    files = bam_file
+    cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, database=database, out_dir=out_dir)
 
     out_files = []
     commands = []
-    for i, (fwd_fp, rev_fp) in enumerate(files):
-        fname = basename(fwd_fp)
+    for bam in bam_file:
+        fname = basename(bam)
         out_files.append((f'{out_dir}/{fname}', 'raw_forward_seqs'))
-        if rev_fp:
-            rname = basename(rev_fp)
-            out_files.append((f'{out_dir}/{rname}', 'raw_reverse_seqs'))
-            cmd = command % (fwd_fp, rev_fp, fname, rname)
-        else:
-            cmd = command % (fwd_fp, fname)
+        cmd = command % (bam, fname)
         commands.append(cmd)
 
     return commands, out_files
