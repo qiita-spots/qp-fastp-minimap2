@@ -6,7 +6,7 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 import pandas as pd
-
+import tarfile
 from os import environ
 from os.path import basename, join
 from glob import glob
@@ -24,7 +24,8 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
 IVAR_TRIM_CMD = ' '.join([IVAR_TRIM_BASE, '-p {out_dir}/%s'])
-
+file = tarfile.open('/qp_ivar_trim/support_file/tar_file/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
+file.extractall('/qp_ivar_trim/support_file/raw_data')
 
 def get_dbs_list():
     folder = QC_REFERENCE_DB
@@ -36,12 +37,13 @@ def get_dbs_list():
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
     files = bam_file
+
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
 
     out_files = []
     commands = []
-    for bam in bam_file:
+    for bam in files:
         fname = basename(bam)
         out_files.append((f'{out_dir}/{fname}', 'trimmed'))
         cmd = command % (bam, fname)
