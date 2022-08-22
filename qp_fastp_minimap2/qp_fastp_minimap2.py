@@ -32,7 +32,7 @@ FASTP_CMD_SINGLE = (f'{FASTP_BASE} -o '
 COMBINED_CMD = (f'{FASTP_BASE} -I %s --stdout | {MINIMAP2_BASE} | '
                 '{out_dir}/%s -2 {out_dir}/%s')
 COMBINED_CMD_SINGLE = (f'{FASTP_BASE} --stdout | {MINIMAP2_BASE} | '
-                        '-0 {out_dir}/%s')
+                       '{out_dir}/%s')
 
 
 def get_dbs_list():
