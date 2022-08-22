@@ -69,12 +69,11 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(obs[1], eof)
 
 
-'''
+
     def test_fastp_minimap2(self):
         # inserting new prep template
         prep_info_dict = {
-            'SKB8.640193': {'run_prefix': 'S22205_S104'},
-            'SKD8.640184': {'run_prefix': 'S22282_S102'}}
+            'SKB8.640193': {'run_prefix': 'CALM_SEP_001970_03'}}
         data = {'prep_info': dumps(prep_info_dict),
                 # magic #1 = testing study
                 'study': 1,
@@ -85,22 +84,20 @@ class FastpMinimap2Tests(PluginTestCase):
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
 
-        fp1_1 = join(in_dir, 'S22205_S104_L001_R1_001.fastq.gz')
-        fp1_2 = join(in_dir, 'S22205_S104_L001_R2_001.fastq.gz')
-        fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
-        fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
-        source_dir = 'qp_fastp_minimap2/support_files/raw_data'
-        copyfile(f'{source_dir}/S22205_S104_L001_R1_001.fastq.gz', fp1_1)
-        copyfile(f'{source_dir}/S22205_S104_L001_R2_001.fastq.gz', fp1_2)
-        copyfile(f'{source_dir}/S22282_S102_L001_R1_001.fastq.gz', fp2_1)
-        copyfile(f'{source_dir}/S22282_S102_L001_R2_001.fastq.gz', fp2_2)
+        fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
+        fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
+        # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
+        # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
+        source_dir = 'qp_ivar_trim/support_files/raw_data'
+        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam',
+                 fp1_1)
+        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam',
+                 fp1_2)
 
         data = {
             'filepaths': dumps([
-                (fp1_1, 'raw_forward_seqs'),
-                (fp1_2, 'raw_reverse_seqs'),
-                (fp2_1, 'raw_forward_seqs'),
-                (fp2_2, 'raw_reverse_seqs')]),
+                (fp1_1, 'bam'),
+                (fp1_2, 'bam')]),
             'type': "per_sample_FASTQ",
             'name': "Test artifact",
             'prep': pid}
@@ -198,26 +195,28 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\traw_forward_seqs\n',
-            f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\traw_reverse_seqs\n',
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz\traw_forward_seqs\n',
-            f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz\traw_reverse_seqs']
+            f'{out_dir}/CALM_SEP_001970_03_S265_L001.trimmed.sorted.bam\tbam\n',
+            f'{out_dir}/CALM_SEP_001970_03_S265_L002.trimmed.sorted.bam\tbam\n']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
+        # exp_commands = [
+        #    f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
+        #    f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
+        #    f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
+        #    f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
+        #    f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
+        #    f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
+        #    f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
+        #    f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
         exp_commands = [
-            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
-            f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
-            f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
-            f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
-            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
-            f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
-            f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
-            f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
+            'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L001.sorted.bam '
+            f'-p {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam '
+        ]
         self.assertEqual(commands, exp_commands)
-
+'''
     def test_fastp_minimap2_just_fwd(self):
         # inserting new prep template
         prep_info_dict = {
