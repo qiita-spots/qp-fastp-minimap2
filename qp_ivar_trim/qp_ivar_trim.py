@@ -24,8 +24,6 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
 IVAR_TRIM_CMD = ' '.join([IVAR_TRIM_BASE, '-p {out_dir}/%s'])
-file = tarfile.open('/qp_ivar_trim/support_file/tar_file/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
-file.extractall('/qp_ivar_trim/support_file/raw_data')
 
 def get_dbs_list():
     folder = QC_REFERENCE_DB

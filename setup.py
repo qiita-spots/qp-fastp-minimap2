@@ -9,7 +9,7 @@
 # -----------------------------------------------------------------------------
 from setuptools import setup
 from glob import glob
-
+import tarfile
 __version__ = "2022.04"
 
 classes = """
@@ -27,6 +27,9 @@ classes = """
 
 with open('README.rst') as f:
     long_description = f.read()
+
+file = tarfile.open('/qp_ivar_trim/support_file/tar_file/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
+file.extractall('/qp_ivar_trim/support_file/raw_data')
 
 classifiers = [s.strip() for s in classes.split('\n') if s]
 
