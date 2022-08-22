@@ -125,17 +125,14 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
         The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
     database = None
-    if params['reference'] != 'None':
-        database = [join(QC_REFERENCE_DB, f'{db}')
-                    for db in get_dbs_list()
-                    if params['reference'] in db][0]
+    if params['primer'] != 'None':
+        database = get_dbs_list()
 
-    fwd_seqs = sorted(files['raw_forward_seqs'])
-    if 'raw_reverse_seqs' in files:
-        rev_seqs = sorted(files['raw_reverse_seqs'])
-    else:
-        rev_seqs = []
-
+    bam_reads = sorted(files['untrimmed_sorted_bam'])
+#    if 'raw_reverse_seqs' in files:
+#        rev_seqs = sorted(files['raw_reverse_seqs'])
+#    else:
+#        rev_seqs = []
     df = pd.read_csv(prep_info, sep='\t', dtype='str',
                      na_values=[], keep_default_na=True)
     df.set_index('sample_name', inplace=True)
@@ -146,10 +143,10 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     # we are not going to use it and simply loop over the ordered
     # fwd_seqs/rev_seqs
     commands, out_files = _generate_commands(
-        fwd_seqs, rev_seqs, database, params['threads'], out_dir)
+        bam_reads, database, params['threads'], out_dir)
 
     # writing the job array details
-    details_name = join(out_dir, 'fastp_minimap2.array-details')
+    details_name = join(out_dir, 'ivar_trim.array-details')
     with open(details_name, 'w') as details:
         details.write('\n'.join(commands))
     n_jobs = len(commands)
@@ -199,7 +196,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
              'date',  # start time
              'hostname',  # executing system
              'echo $PBS_JOBID',
-             f'finish_qp_fastp_minimap2 {url} {job_id} {out_dir}\n'
+             f'finish_qp_ivar_trim {url} {job_id} {out_dir}\n'
              "date"]
     finish_qsub_fp = join(out_dir, f'{job_id}.finish.qsub')
     with open(finish_qsub_fp, 'w') as out:
