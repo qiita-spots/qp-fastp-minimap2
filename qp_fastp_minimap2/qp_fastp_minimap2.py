@@ -54,7 +54,7 @@ def _generate_commands(bam_file, primer, nprocs, out_dir):
     commands = []
     for bam in bam_file:
         fname = basename(bam)
-        out_files.append((f'{out_dir}/{fname}', 'raw_forward_seqs'))
+        out_files.append((f'{out_dir}/{fname}', 'trimmed'))
         cmd = command % (bam, fname)
         commands.append(cmd)
 
