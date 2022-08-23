@@ -15,7 +15,7 @@ from qp_ivar_trim import plugin
 
 @click.command()
 @click.option('--env-script', prompt='Environment script',
-              default='source activate qp-ivar-trim')
+              default='conda activate qp-ivar-trim')
 @click.option('--server-cert', prompt='Server certificate', default='None')
 def config(env_script, server_cert):
     """Generates the Qiita configuration files"""
