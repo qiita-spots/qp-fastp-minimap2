@@ -82,7 +82,7 @@ class IvarTrimTests(PluginTestCase):
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
         file = tarfile.open('qp_ivar_trim/support_files/raw_data/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
-        file.extractall('support_file/raw_data')
+        file.extractall('qp_ivar_trim/support_file/raw_data')
         fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
