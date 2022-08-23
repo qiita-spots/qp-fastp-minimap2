@@ -20,7 +20,7 @@ FINISH_MEMORY = '10g'
 FINISH_WALLTIME = '10:00:00'
 MAX_RUNNING = 8
 file = tarfile.open('qp_ivar_trim/support_files/raw_data/CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
-file.extractall('qp-ivar-trim/qp_ivar_trim/support_file/raw_data')
+file.extractall('qp_ivar_trim/support_file/raw_data')
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
