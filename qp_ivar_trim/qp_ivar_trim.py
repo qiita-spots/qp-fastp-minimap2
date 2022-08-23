@@ -11,6 +11,7 @@ from os.path import basename, join
 from glob import glob
 from itertools import zip_longest
 from qiita_client import ArtifactInfo
+import gzip
 
 MEMORY = '16g'
 WALLTIME = '30:00:00'
@@ -32,7 +33,8 @@ def get_dbs_list():
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    files = bam_file
+    with gzip.open('bamfile', 'rb') as f:
+        files = f.read()
 
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
