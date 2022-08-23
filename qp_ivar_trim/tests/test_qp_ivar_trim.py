@@ -52,15 +52,18 @@ class IvarTrimTests(PluginTestCase):
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
-        bam_file = 'CALM_SEP_001970_03_S265_L001.sorted.bam.gz'
+        bam_file = ['untrimmed1.unsorted.bam.gz',
+                    'untrimmed1.sorted.bam.gz']
         obs = _generate_commands(bam_file, 
                                  params['primer'], 
                                  params['nprocs'],
                                  params['out_dir'])
-        cmd = IVAR_TRIM_CMD.format(**params)
-        ecmds = [cmd % (bam, bam)
-                 for bam in bam_file]
-        eof = [(f'{params["out_dir"]}/{bam}', 'trimmed')
+        cmd = IVAR_TRIM_CMD.format(nprocs=params['nprocs'], out_dir_a=params['out_dir'], out_dir_b=params['out_dir'], primer=params['primer'])
+        ecmds = []
+        for bam_gz in bam_file:
+            bam = bam_gz[:-3]
+            ecmds.append(cmd % (bam_gz, bam, bam, bam_gz))
+        eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
@@ -93,9 +96,9 @@ class IvarTrimTests(PluginTestCase):
 
         data = {
             'filepaths': dumps([
-                (fp1_1, 'sorted_bam'),
-                (fp1_2, 'sorted_bam')]),
-            'type': "per_sample_BAM",
+                (fp1_1, 'tgz'),
+                (fp1_2, 'tgz')]),
+            'type': "BAM",
             'name': "Test artifact",
             'prep': pid}
         aid = self.qclient.post('/apitest/artifact/', data=data)['artifact']
@@ -192,13 +195,13 @@ class IvarTrimTests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/CALM_SEP_001970_03_S265_L001.trimmed.sorted.bam\tbam\n',
-            f'{out_dir}/CALM_SEP_001970_03_S265_L002.trimmed.sorted.bam\tbam\n']
+            f'{out_dir}/CALM_SEP_001970_03_S265_L001.trimmed.sorted.bam\ttgz\n',
+            f'{out_dir}/CALM_SEP_001970_03_S265_L002.trimmed.sorted.bam\ttgz']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
-        apath = dirname(artifact_info['files']['gz'][0])
+        apath = dirname(artifact_info['files']['tgz'][0])
         # exp_commands = [
         #    f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
         #    f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
@@ -211,8 +214,8 @@ class IvarTrimTests(PluginTestCase):
         exp_commands = [
             f'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L001.sorted.bam '
             f'-p {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam '
-            f'gunzip {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz'
-            f'gunzip {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz'
+            f'gunzip {apath}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz'
+            f'gunzip {apath}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz'
             f'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L002.sorted.bam '
             f'-p {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam '
         ]

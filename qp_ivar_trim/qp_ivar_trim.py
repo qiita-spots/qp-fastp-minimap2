@@ -40,7 +40,7 @@ def _generate_commands(bam_file, primer, nprocs, out_dir):
     out_files = []
     commands = []
     for bam_gz in files:
-        fname_gz = basename(bam)
+        fname_gz = basename(bam_gz)
         fname = fname_gz[:-3]
         bam = bam_gz[:-3]
         out_files.append((f'{out_dir}/{fname_gz}', 'tgz'))
@@ -85,7 +85,7 @@ def ivar_trim(qclient, job_id, parameters, out_dir):
     # Step 4 generating artifacts
     msg = "Step 4 of 4: Generating new artifact"
     qclient.update_job_step(job_id, msg)
-    ainfo = [ArtifactInfo('Filtered files', 'per_sample_FASTQ', out_files)]
+    ainfo = [ArtifactInfo('Filtered files', 'BAM', out_files)]
 
     return True, ainfo, ""
 
@@ -117,7 +117,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     if params['primer'] != 'None':
         database = get_dbs_list()
 
-    bam_reads = sorted(files['untrimmed_sorted_bam'])
+    
 #    if 'raw_reverse_seqs' in files:
 #        rev_seqs = sorted(files['raw_reverse_seqs'])
 #    else:
