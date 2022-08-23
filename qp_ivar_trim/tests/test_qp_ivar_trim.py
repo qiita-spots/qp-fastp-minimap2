@@ -153,16 +153,16 @@ class IvarTrimTests(PluginTestCase):
             '#!/bin/bash\n',
             '#PBS -M qiita.help@gmail.com\n',
             f'#PBS -N {job_id}\n',
-            '#PBS -l nodes=1:ppn=2\n',
-            '#PBS -l walltime=30:00:00\n',
-            '#PBS -l mem=16g\n',
+            f'#PBS -l nodes=1:ppn=2\n',
+            f'#PBS -l walltime=30:00:00\n',
+            f'#PBS -l mem=16g\n',
             f'#PBS -o {out_dir}/{job_id}_${{PBS_ARRAYID}}.log\n',
             f'#PBS -e {out_dir}/{job_id}_${{PBS_ARRAYID}}.err\n',
-            '#PBS -t 1-2%8\n',
+            f'#PBS -t 1-2%8\n',
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source /home/runner/.profile; source activate qp-ivar-trim\n '
+            'source /home/runner/.profile; source activate qp-ivar-trim\n'
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
@@ -186,7 +186,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source /home/runner/.profile; source activate qp-ivar-trim\n '
+            'source /home/runner/.profile; source activate qp-ivar-trim'
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
