@@ -180,7 +180,6 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
              'set -e',
              f'cd {out_dir}',
              f'{params["environment"]}',
-             'source /home/runner/.profile; source activate qp-ivar-trim\n'
              'date',  # start time
              'hostname',  # executing system
              'echo $PBS_JOBID',
