@@ -14,7 +14,6 @@ from tempfile import mkdtemp
 from json import dumps
 from itertools import zip_longest
 from functools import partial
-import tarfile
 from qp_ivar_trim import plugin
 from qp_ivar_trim.utils import plugin_details
 from qp_ivar_trim.qp_ivar_trim import (
