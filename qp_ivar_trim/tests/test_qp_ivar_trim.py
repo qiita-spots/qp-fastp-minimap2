@@ -58,7 +58,7 @@ class IvarTrimTests(PluginTestCase):
                                  params['primer'], 
                                  params['nprocs'],
                                  params['out_dir'])
-        cmd = IVAR_TRIM_CMD.format(nprocs=params['nprocs'], out_dir_a=params['out_dir'], out_dir_b=params['out_dir'], primer=params['primer'])
+        cmd = IVAR_TRIM_CMD.format(nprocs=params['nprocs'], out_dir=params['out_dir'], primer=params['primer'])
         ecmds = []
         for bam_gz in bam_file:
             bam = bam_gz[:-3]
