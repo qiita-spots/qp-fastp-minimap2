@@ -39,10 +39,12 @@ def _generate_commands(bam_file, primer, nprocs, out_dir):
 
     out_files = []
     commands = []
-    for bam in files:
-        fname = basename(bam)
-        out_files.append((f'{out_dir}/{fname}', 'trimmed'))
-        cmd = command % (bam, fname)
+    for bam_gz in files:
+        fname_gz = basename(bam)
+        fname = fname_gz[:-3]
+        bam = bam_gz[:-3]
+        out_files.append((f'{out_dir}/{fname_gz}', 'tgz'))
+        cmd = command % (bam_gz, bam, fname, fname_gz)
         commands.append(cmd)
 
     return commands, out_files
@@ -130,7 +132,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     # we are not going to use it and simply loop over the ordered
     # fwd_seqs/rev_seqs
     commands, out_files = _generate_commands(
-        bam_reads, database, params['threads'], out_dir)
+        files['tgz'], database, params['threads'], out_dir)
 
     # writing the job array details
     details_name = join(out_dir, 'ivar_trim.array-details')
