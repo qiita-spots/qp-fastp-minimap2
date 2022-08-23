@@ -171,7 +171,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     lines = ['#!/bin/bash',
              '#PBS -M qiita.help@gmail.com',
              f'#PBS -N finish-{job_id}',
-             '#PBS -l nodes=1:ppn=1',
+             f'#PBS -l nodes=1:ppn=1',
              f'#PBS -l walltime={FINISH_WALLTIME}',
              f'#PBS -l mem={FINISH_MEMORY}',
              f'#PBS -o {out_dir}/finish-{job_id}.log',
@@ -180,6 +180,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
              'set -e',
              f'cd {out_dir}',
              f'{params["environment"]}',
+             'source /home/runner/.profile; source activate qp-ivar-trim\n'
              'date',  # start time
              'hostname',  # executing system
              'echo $PBS_JOBID',
