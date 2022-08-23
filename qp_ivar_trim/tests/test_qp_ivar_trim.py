@@ -163,7 +163,6 @@ class IvarTrimTests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source /home/runner/.profile; source activate qp-ivar-trim\n '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
@@ -188,7 +187,6 @@ class IvarTrimTests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source /home/runner/.profile; source activate qp-ivar-trim\n '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
