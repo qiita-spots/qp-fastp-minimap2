@@ -160,7 +160,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
@@ -185,7 +185,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
@@ -308,7 +308,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
@@ -333,7 +333,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source ~/.bash_profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim; '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
