@@ -218,6 +218,8 @@ class IvarTrimTests(PluginTestCase):
             f'gunzip {apath}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz'
             f'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L002.sorted.bam '
             f'-p {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam '
+            f'gzip {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz\n'
+            f'gzip {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz\n'
         ]
         self.assertEqual(commands, exp_commands)
 '''
