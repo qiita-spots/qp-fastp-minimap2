@@ -113,9 +113,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     str, str, str
         The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
-    primer = None
-    if params['primer'] != 'None':
-        primer = get_dbs_list()
+    primer = get_dbs_list()
 
     
 #    if 'raw_reverse_seqs' in files:
