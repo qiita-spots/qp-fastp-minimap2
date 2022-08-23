@@ -80,6 +80,8 @@ class IvarTrimTests(PluginTestCase):
                 'data_type': 'Metagenomic'}
         pid = self.qclient.post('/apitest/prep_template/', data=data)['prep']
 
+        fname_1 = 'CALM_SEP_001970_03_S265_L001'
+        fname_2 = 'CALM_SEP_001970_03_S265_L002'
         # inserting artifacts
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
@@ -89,9 +91,9 @@ class IvarTrimTests(PluginTestCase):
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
         source_dir = 'qp_ivar_trim/support_files/raw_data'
-        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz',
+        copyfile(f'{source_dir}/{fname_1}.sorted.bam.gz',
                  fp1_1)
-        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz',
+        copyfile(f'{source_dir}/{fname_2}.sorted.bam.gz',
                  fp1_2)
 
         data = {
@@ -160,7 +162,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source /home/runner/.profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim\n '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
@@ -185,7 +187,7 @@ class IvarTrimTests(PluginTestCase):
             '#PBS -l epilogue=/home/qiita/qiita-epilogue.sh\n',
             'set -e\n',
             f'cd {out_dir}\n',
-            'source /home/runner/.profile; source activate qp-ivar-trim; '
+            'source /home/runner/.profile; source activate qp-ivar-trim\n '
             f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
             'date\n',
             'hostname\n',
@@ -195,8 +197,8 @@ class IvarTrimTests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/CALM_SEP_001970_03_S265_L001.trimmed.sorted.bam\ttgz\n',
-            f'{out_dir}/CALM_SEP_001970_03_S265_L002.trimmed.sorted.bam\ttgz']
+            f'{out_dir}/{fname_1}.trimmed.sorted.bam\ttgz\n',
+            f'{out_dir}/{fname_2}.trimmed.sorted.bam\ttgz']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
@@ -212,14 +214,14 @@ class IvarTrimTests(PluginTestCase):
         #    f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
         #    f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
         exp_commands = [
-            f'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L001.sorted.bam '
-            f'-p {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam '
-            f'gunzip {apath}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz'
-            f'gunzip {apath}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz'
-            f'ivar trim -x {nprocs} -e -b {primer} -i CALM_SEP_001970_03_S265_L002.sorted.bam '
-            f'-p {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam '
-            f'gzip {out_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz\n'
-            f'gzip {out_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz\n'
+            f'ivar trim -x 5 -e -b primer.bed -i {fname_1}.sorted.bam '
+             '-p {out_dir}/{fname_1}.sorted.bam '
+            f'gunzip {apath}/{fname_1}.sorted.bam.gz'
+            f'gunzip {apath}/{fname_2}.sorted.bam.gz'
+            f'ivar trim -x 5 -e -b primer.bed -i {fname_2}.sorted.bam '
+             '-p {out_dir}/{fname_2}.sorted.bam '
+            f'gzip {out_dir}/{fname_1}.sorted.bam.gz\n'
+            f'gzip {out_dir}/{fname_2}.sorted.bam.gz\n'
         ]
         self.assertEqual(commands, exp_commands)
 '''
