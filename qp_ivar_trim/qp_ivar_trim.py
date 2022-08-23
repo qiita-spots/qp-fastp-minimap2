@@ -11,7 +11,7 @@ from os import environ
 from os.path import basename, join
 from glob import glob
 from itertools import zip_longest
-
+import tarfile
 from qiita_client import ArtifactInfo
 
 MEMORY = '16g'
@@ -19,8 +19,6 @@ WALLTIME = '30:00:00'
 FINISH_MEMORY = '10g'
 FINISH_WALLTIME = '10:00:00'
 MAX_RUNNING = 8
-file = tarfile.open('qp_ivar_trim\support_files\raw_data\CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
-file.extractall('qp_ivar_trim\support_files\raw_data')
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
@@ -35,7 +33,7 @@ def get_dbs_list():
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    files = bam_file
+    files = bam_file.extract('CALM_SEP_001970_03_S265_L001.sorted.bam', 'qp_ivar_trim\support_files\raw_data\CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
 
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
