@@ -6,12 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 import pandas as pd
-import tarfile
 from os import environ
 from os.path import basename, join
 from glob import glob
 from itertools import zip_longest
-import tarfile
 from qiita_client import ArtifactInfo
 
 MEMORY = '16g'
@@ -33,7 +31,7 @@ def get_dbs_list():
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    files = bam_file.extract('CALM_SEP_001970_03_S265_L001.sorted.bam', 'qp_ivar_trim\support_files\raw_data\CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
+    files = bam_file
 
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)

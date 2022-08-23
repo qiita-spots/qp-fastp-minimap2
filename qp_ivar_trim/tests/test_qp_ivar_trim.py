@@ -18,7 +18,7 @@ from qp_ivar_trim import plugin
 from qp_ivar_trim.utils import plugin_details
 from qp_ivar_trim.qp_ivar_trim import (
     get_dbs_list, _generate_commands, ivar_trim_to_array, QC_REFERENCE_DB, IVAR_TRIM_CMD)
-import tarfile
+
 
 class IvarTrimTests(PluginTestCase):
     def setUp(self):
@@ -81,16 +81,15 @@ class IvarTrimTests(PluginTestCase):
         # inserting artifacts
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
-        file = tarfile.open('qp_ivar_trim\support_files\raw_data\CALM_SEP_001970_03_S265_L001.sorted.tar.gz')
-        file.extractall('qp_ivar_trim/support_file/raw_data')
-        fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
-        fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
+        
+        fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam.gz')
+        fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam.gz')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
         source_dir = 'qp_ivar_trim/support_files/raw_data'
-        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam',
+        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L001.sorted.bam.gz',
                  fp1_1)
-        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam',
+        copyfile(f'{source_dir}/CALM_SEP_001970_03_S265_L002.sorted.bam.gz',
                  fp1_2)
 
         data = {
