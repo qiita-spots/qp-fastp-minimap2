@@ -33,7 +33,7 @@ def get_dbs_list():
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-
+    files = bam_file
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
 
