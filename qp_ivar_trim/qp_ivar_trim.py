@@ -33,7 +33,8 @@ def get_dbs_list():
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    with gzip.open('bamfile', 'rb') as f:
+    test = out_dir +'/' + bam_file
+    with gzip.open(test, 'rb') as f:
         files = f.read()
 
     cmd = IVAR_TRIM_CMD
