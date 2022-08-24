@@ -28,7 +28,8 @@ def get_dbs_list():
     folder = QC_REFERENCE_DB
 
     # skip human database
-    return [basename(f) for f in glob(f'{folder}/*.bed')]
+    list = [basename(f) for f in glob(f'{folder}/*.bed')]
+    return list
 
 
 def _generate_commands(bam_file, primer, nprocs, out_dir):
@@ -113,7 +114,13 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     str, str, str
         The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
-    primer = get_dbs_list()
+    primer = None
+    if params['primer'] != 'None':
+        list = get_dbs_list()
+        print(params['reference'])
+        primer = [join(QC_REFERENCE_DB, f'{db}')
+                     for db in list
+                     if params['primer'] in db][0]
 
     
 #    if 'raw_reverse_seqs' in files:
