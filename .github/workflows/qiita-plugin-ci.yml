@@ -47,30 +47,37 @@ jobs:
         shell: bash -l {0}
         run: |
           echo "Testing: " $COVER_PACKAGE
+
           # we need to download qiita directly so we have "easy" access to
           # all config files
           wget https://github.com/biocore/qiita/archive/dev.zip
           unzip dev.zip
+
           # pull out the port so we can modify the configuration file easily
           pgport=${{ job.services.postgres.ports[5432] }}
           sed -i "s/PORT = 5432/PORT = $pgport/" qiita-dev/qiita_core/support_files/config_test.cfg
+
           # PGPASSWORD is read by pg_restore, which is called by the build_db process.
           export PGPASSWORD=postgres
+
           # Setting up main qiita conda environment
           conda config --add channels conda-forge
           conda create -q --yes -n qiita python=3.9 libgfortran numpy nginx cython redis
           conda activate qiita
           pip install sphinx sphinx-bootstrap-theme nose-timer codecov Click
+
       - name: Qiita install
         shell: bash -l {0}
         run: |
           conda activate qiita
           pip install qiita-dev/ --no-binary redbiom
           mkdir ~/.qiita_plugins
+
       - name: Install Qiita plugins
         shell: bash -l {0}
         run: |
           conda config --add channels bioconda
+
           conda create -q --yes -n qtp-bam python=3.9 pip pigz quast fqtools
           conda activate qtp-bam
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
@@ -85,6 +92,7 @@ jobs:
           pip --quiet install coveralls
           export QC_REFERENCE_DB=$PWD/qp_ivar_trim/support_files/databases/
           for file in $(ls $QC_REFERENCE_DB/*.gz); do gunzip $file; done
+
           configure_qp_ivar_trim --env-script 'source /home/runner/.profile; source activate qp-ivar-trim; export ENVIRONMENT="source /home/runner/.profile; source activate qp-ivar-trim"' --server-cert $QIITA_SERVER_CERT
           echo "Available Qiita plugins"
           ls ~/.qiita_plugins/
@@ -95,19 +103,23 @@ jobs:
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
           export QIITA_CONFIG_FP=`pwd`/qiita-dev/qiita_core/support_files/config_test_local.cfg
           sed "s#/home/runner/work/qiita/qiita#${PWD}/qiita-dev/#g" `pwd`/qiita-dev/qiita_core/support_files/config_test.cfg > ${QIITA_CONFIG_FP}
+          
           export REDBIOM_HOST="http://localhost:7379"
           echo "1. Setting up redis"
           redis-server --daemonize yes --port 7777
+          
           echo "2. Setting up nginx"
           mkdir -p ${CONDA_PREFIX}/var/run/nginx/
           export NGINX_FILE=`pwd`/qiita-dev/qiita_pet/nginx_example.conf
           export NGINX_FILE_NEW=`pwd`/qiita-dev/qiita_pet/nginx_example_local.conf
           sed "s#/home/runner/work/qiita/qiita#${PWD}/qiita-dev/#g" ${NGINX_FILE} > ${NGINX_FILE_NEW}
           nginx -c ${NGINX_FILE_NEW}
+          
           echo "3. Setting up qiita"
           qiita-env make --no-load-ontologies
           qiita plugins update
           qiita-test-install
+          
           echo "4. Starting supervisord => multiple qiita instances"
           supervisord -c ${PWD}/qiita-dev/qiita_pet/supervisor_example.conf
           sleep 10
