@@ -24,7 +24,7 @@ dbs_without_extension = [splitext(db)[0] for db in dbs]
 dbs_defaults = ', '.join([f'"{x}"' for x in dbs_without_extension])
 req_params = {'input': ('artifact', ['per_sample_FASTQ'])}
 opt_params = {
-    'reference': [
+    'primer': [
         f'choice:["None", {dbs_defaults}]', dbs_without_extension[0]],
     'threads': ['integer', f'{THREADS}']}
 
