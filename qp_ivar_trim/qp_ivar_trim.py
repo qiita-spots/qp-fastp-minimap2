@@ -115,7 +115,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
         The paths of the main_qsub_fp, finish_qsub_fp, out_files_fp
     """
     primer = None
-    if params['primer'] is not 'None':
+    if params['primer'] != 'None':
         list = get_dbs_list()
         print(params['primer'])
         primer = [join(QC_REFERENCE_DB, f'{db}')
