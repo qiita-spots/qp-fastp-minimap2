@@ -31,10 +31,10 @@ opt_params = {
 outputs = {'Filtered files': 'per_sample_FASTQ'}
 default_params = {
     'auto-detect adapters only filtering [not recommended]': {
-        'reference': "None", 'threads': THREADS}}
+        'primer': "None", 'threads': THREADS}}
 for db in dbs_without_extension:
     name = f'auto-detect adapters and {db} + phix filtering'
-    default_params[name] = {'reference': db, 'threads': THREADS}
+    default_params[name] = {'primer': db, 'threads': THREADS}
 
 ivar_trim_cmd = QiitaCommand(
     'Adapter and host filtering', "Sequence adapter and host filtering",
