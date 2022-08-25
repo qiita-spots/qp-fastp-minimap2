@@ -119,7 +119,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
         list = get_dbs_list()
         print(params['primer'])
         primer = [join(QC_REFERENCE_DB, f'{db}')
-                     for db in list if params['primer'] in db][0]
+                     for db in list]
 
     
 #    if 'raw_reverse_seqs' in files:
