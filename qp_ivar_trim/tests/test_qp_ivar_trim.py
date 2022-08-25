@@ -197,8 +197,8 @@ class IvarTrimTests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/{fname_1}.trimmed.sorted.bam\ttgz\n',
-            f'{out_dir}/{fname_2}.trimmed.sorted.bam\ttgz\n']
+            f'{out_dir}/{fname_1}.sorted.bam\ttgz\n',
+            f'{out_dir}/{fname_2}.sorted.bam\ttgz\n']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
