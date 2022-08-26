@@ -36,9 +36,9 @@ def get_dbs_list():
     return list
 
 
-def _generate_commands(bam_file, primer, nprocs, out_dir):
+def _generate_commands(unsorted_bams_gz, primer, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
-    files = bam_file
+    files = unsorted_bams_gz
     cmd = IVAR_TRIM_CMD
     command = cmd.format(nprocs=nprocs, primer=primer, out_dir=out_dir)
 
@@ -49,6 +49,7 @@ def _generate_commands(bam_file, primer, nprocs, out_dir):
         fname = fname_gz[:-3]
         bam = bam_gz[:-3]
         out_files.append((f'{out_dir}/{fname_gz}', 'tgz'))
+
         cmd = command % (bam_gz, bam, fname, fname_gz)
         commands.append(cmd)
 
