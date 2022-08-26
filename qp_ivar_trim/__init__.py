@@ -22,13 +22,13 @@ plugin = QiitaPlugin(**plugin_details)
 dbs = get_dbs_list()
 dbs_without_extension = [splitext(db)[0] for db in dbs]
 dbs_defaults = ', '.join([f'"{x}"' for x in dbs_without_extension])
-req_params = {'input': ('artifact', ['per_sample_FASTQ'])}
+req_params = {'input': ('artifact', ['BAM'])}
 opt_params = {
     'primer': [
         f'choice:["None", {dbs_defaults}]', dbs_without_extension[0]],
     'threads': ['integer', f'{THREADS}']}
 
-outputs = {'Filtered files': 'per_sample_FASTQ'}
+outputs = {'trimmed files': 'BAM'}
 default_params = {
     'auto-detect adapters only filtering [not recommended]': {
         'primer': "None", 'threads': THREADS}}
