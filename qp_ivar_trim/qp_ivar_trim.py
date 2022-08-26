@@ -23,7 +23,7 @@ QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 #SORT_CMD = 'gunzip %s; samtools sort %s -o {out_dir}/%s -@ {nprocs}; gzip {out_dir}/%s'
 IVAR_TRIM_BASE = 'ivar trim -x {nprocs} -e -b {primer} -i %s'
 #  IVAR_TRIM_CMD = 'gunzip %s ivar trim -x {nprocs} -e -b {primer} -i %s -p {out_dir}/%s; gzip {out_dir}/%s'
-GZIP_CMD = 'gzip {out_dir_b}/%s'
+GZIP_CMD = 'gzip {out_dir}/%s'
 GUNZIP_CMD = 'gunzip %s'
 IVAR_TRIM_CMD = f'{GUNZIP_CMD}; {IVAR_TRIM_BASE}; {GZIP_CMD}'
 
