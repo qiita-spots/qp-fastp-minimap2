@@ -55,8 +55,8 @@ class IvarTrimTests(PluginTestCase):
         bam_file = ['untrimmed1.sorted.bam.gz',
                     'untrimmed2.sorted.bam.gz']
         obs = _generate_commands(bam_file, 
-                                 params['primer'], 
-                                 params['nprocs'],
+                                 params['nprocs'], 
+                                 params['primer'],
                                  params['out_dir'])
         cmd = IVAR_TRIM_CMD.format(bam_file, nprocs=params['nprocs'], primer=params['primer'], out_dir=params['out_dir']) 
         ecmds = []
