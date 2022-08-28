@@ -8,7 +8,7 @@
 from unittest import main
 from qiita_client.testing import PluginTestCase
 from os import remove, environ
-from os.path import exists, isdir, join, dirname
+from os.path import exists, isdir, join, dirname, basename
 from shutil import rmtree, copyfile
 from tempfile import mkdtemp
 from json import dumps
@@ -61,8 +61,10 @@ class IvarTrimTests(PluginTestCase):
         cmd = IVAR_TRIM_CMD.format(bam_file, primer=params['primer'], nprocs=params['nprocs'], out_dir=params['out_dir'])
         ecmds = []
         for bam_gz in bam_file:
+            fname_gz = basename(bam_gz)
+            fname = fname_gz[:-3]
             bam = bam_gz[:-3]
-            ecmds.append(cmd % (bam_gz, bam, bam, bam_gz))
+            ecmds.append(cmd % (bam_gz, bam, fname))
         eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
