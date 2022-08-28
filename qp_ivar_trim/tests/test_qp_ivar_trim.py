@@ -52,8 +52,8 @@ class IvarTrimTests(PluginTestCase):
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
-        bam_file = ['untrimmed1.unsorted.bam.gz',
-                    'untrimmed1.sorted.bam.gz']
+        bam_file = ['untrimmed1.sorted.bam.gz',
+                    'untrimmed2.sorted.bam.gz']
         obs = _generate_commands(bam_file, 
                                  params['primer'], 
                                  params['nprocs'],
@@ -64,7 +64,7 @@ class IvarTrimTests(PluginTestCase):
             fname_gz = basename(bam_gz)
             fname = fname_gz[:-3]
             bam = bam_gz[:-3]
-            ecmds.append(cmd % (bam_gz, bam, fname))
+            ecmds.append(cmd % (bam_gz, bam, bam))
         eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
