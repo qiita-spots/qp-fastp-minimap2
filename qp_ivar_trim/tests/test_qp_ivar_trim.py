@@ -62,7 +62,7 @@ class IvarTrimTests(PluginTestCase):
         ecmds = []
         for bam_gz in bam_file:
             bam = bam_gz[:-3]
-            ecmds.append(cmd % (bam_gz, bam))
+            ecmds.append(cmd % (bam_gz, bam, bam, bam_gz))
         eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
