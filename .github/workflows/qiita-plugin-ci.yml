@@ -93,7 +93,7 @@ jobs:
           export QC_REFERENCE_DB=$PWD/qp_ivar_trim/support_files/databases/
           for file in $(ls $QC_REFERENCE_DB/*.gz); do gunzip $file; done
 
-          configure_qp_ivar_trim --env-script "source /home/runner/.profile; conda activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/references/; export ENVIRONMENT='source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/references/'" --server-cert $QIITA_SERVER_CERT
+          configure_qp_ivar_trim --env-script "source /home/runner/.profile; conda activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/databases/; export ENVIRONMENT='source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/databases/'" --server-cert $QIITA_SERVER_CERT
           echo "Available Qiita plugins"
           ls ~/.qiita_plugins/
       - name: Starting Main Services
