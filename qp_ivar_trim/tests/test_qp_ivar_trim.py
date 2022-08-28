@@ -29,7 +29,7 @@ class IvarTrimTests(PluginTestCase):
         self.out_dir = out_dir
         self.dbs = get_dbs_list()
         self.db_path = QC_REFERENCE_DB
-        self.params = {'primer': 'artifacts', 'threads': 2}
+        self.params = {'primer': 'primer', 'threads': 2}
         self._clean_up_files = []
         self._clean_up_files.append(out_dir)
 
