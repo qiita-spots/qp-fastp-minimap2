@@ -222,8 +222,8 @@ class IvarTrimTests(PluginTestCase):
             f'gunzip {apath}/{fname_2}.sorted.bam.gz'
             f'ivar trim -x 5 -e -b primer.bed -i {fname_2}.sorted.bam '
              '-p {out_dir}/{fname_2}.sorted.bam '
-            f'gzip {out_dir}/{fname_1}.sorted.bam.gz\n'
-            f'gzip {out_dir}/{fname_2}.sorted.bam.gz\n'
+            f'gzip {out_dir}/{fname_1}.sorted.bam\n'
+            f'gzip {out_dir}/{fname_2}.sorted.bam\n'
         ]
         self.assertEqual(commands, exp_commands)
 

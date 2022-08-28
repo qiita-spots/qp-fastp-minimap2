@@ -122,7 +122,6 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     if params['primer'] != 'None':
         list = get_dbs_list()
         print(params['primer'])
-        print(list)
         primer = [join(QC_REFERENCE_DB, f'{db}')
                      for db in list]
 
