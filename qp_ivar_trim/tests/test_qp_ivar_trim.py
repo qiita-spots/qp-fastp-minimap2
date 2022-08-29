@@ -52,8 +52,8 @@ class IvarTrimTests(PluginTestCase):
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
-        bam_file = ['untrimmed1.sorted.bam.gz',
-                    'untrimmed2.sorted.bam.gz']
+        bam_file = ['bam_reads.sorted.bam.gz',
+                    'bam_reads.sorted.bam.gz']
         obs = _generate_commands(bam_file, 
                                  params['nprocs'], 
                                  params['primer'],
