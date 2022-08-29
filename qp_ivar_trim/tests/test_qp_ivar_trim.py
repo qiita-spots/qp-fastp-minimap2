@@ -52,8 +52,8 @@ class IvarTrimTests(PluginTestCase):
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
-        bam_file = ['bam_reads.sorted.bam.gz',
-                    'bam_reads.sorted.bam.gz']
+        bam_file = ['CALM_SEP_001970_03_S265_L001.sorted.bam.gz',
+                    'CALM_SEP_001970_03_S265_L002.sorted.bam.gz']
         obs = _generate_commands(bam_file, 
                                  params['nprocs'], 
                                  params['primer'],
@@ -64,7 +64,8 @@ class IvarTrimTests(PluginTestCase):
             fname_gz = basename(bam_gz)
             fname = fname_gz[:-3]
             bam = bam_gz[:-3]
-            ecmds.append(cmd % (bam_gz, bam, bam, bam))
+            prefix_name = bam[:-11] + '.trimmed.unsorted'
+            ecmds.append(cmd % (bam_gz, bam, prefix_name, bam))
         eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
@@ -199,8 +200,8 @@ class IvarTrimTests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/{fname_1}.trimmed.sorted.bam.gz\ttgz\n',
-            f'{out_dir}/{fname_2}.trimmed.sorted.bam.gz\ttgz']
+            f'{out_dir}/{fname_1}.trimmed.unsorted.bam.gz\ttgz\n',
+            f'{out_dir}/{fname_2}.trimmed.unsorted.bam.gz\ttgz']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
@@ -222,8 +223,8 @@ class IvarTrimTests(PluginTestCase):
             f'gunzip {apath}/{fname_2}.sorted.bam.gz'
             f'ivar trim -x 5 -e -b primer.bed -i {fname_2}.sorted.bam '
              '-p {out_dir}/{fname_2}.sorted.bam '
-            f'gzip {out_dir}/{fname_1}.sorted.bam\n'
-            f'gzip {out_dir}/{fname_2}.sorted.bam\n'
+            f'gzip {out_dir}/{fname_1}.unsorted.bam\n'
+            f'gzip {out_dir}/{fname_2}.unsorted.bam\n'
         ]
         self.assertEqual(commands, exp_commands)
 
