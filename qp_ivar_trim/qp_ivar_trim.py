@@ -47,11 +47,13 @@ def _generate_commands(untrimmed_bams_gz, nprocs, primer, out_dir):
         fname_gz = basename(bam_gz)
         fname = fname_gz[:-3]
         bam = bam_gz[:-3]
+        prefix_name = (bam[:-14], '.trimmed.sorted.bam')
         out_files.append((f'{out_dir}/{fname_gz}', 'tgz'))
 
-        cmd = command % (bam_gz, bam, bam, bam)
+        cmd = command % (bam_gz, bam, prefix_name, bam)
         commands.append(cmd)
     print(bam)
+    print(prefix_name)
     return commands, out_files
 
 
