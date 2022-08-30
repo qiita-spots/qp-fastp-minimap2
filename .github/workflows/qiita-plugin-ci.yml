@@ -47,37 +47,30 @@ jobs:
         shell: bash -l {0}
         run: |
           echo "Testing: " $COVER_PACKAGE
-
           # we need to download qiita directly so we have "easy" access to
           # all config files
           wget https://github.com/qiita-spots/qiita/archive/dev.zip
           unzip dev.zip
-
           # pull out the port so we can modify the configuration file easily
           pgport=${{ job.services.postgres.ports[5432] }}
           sed -i "s/PORT = 5432/PORT = $pgport/" qiita-dev/qiita_core/support_files/config_test.cfg
-
           # PGPASSWORD is read by pg_restore, which is called by the build_db process.
           export PGPASSWORD=postgres
-
           # Setting up main qiita conda environment
           conda config --add channels conda-forge
           conda create -q --yes -n qiita python=3.9 libgfortran numpy nginx cython redis
           conda activate qiita
           pip install sphinx sphinx-bootstrap-theme nose-timer codecov Click
-
       - name: Qiita install
         shell: bash -l {0}
         run: |
           conda activate qiita
           pip install qiita-dev/ --no-binary redbiom
           mkdir ~/.qiita_plugins
-
       - name: Install Qiita plugins
         shell: bash -l {0}
         run: |
           conda config --add channels bioconda
-
           conda create -q --yes -n qtp-bam python=3.9 pip pigz quast fqtools
           conda activate qtp-bam
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
@@ -90,10 +83,9 @@ jobs:
           conda activate qp-ivar-trim
           pip --quiet install .
           pip --quiet install coveralls
-          export QC_REFERENCE_DB=$PWD/qp_ivar_trim/support_files/databases/
-          for file in $(ls $QC_REFERENCE_DB/*.gz); do gunzip $file; done
-
-          configure_qp_ivar_trim --env-script "source /home/runner/.profile; conda activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/databases/; export ENVIRONMENT='source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/databases/'" --server-cert $QIITA_SERVER_CERT
+          export QC_REFERENCE=$PWD/qp_ivar_trim/support_files/databases/
+          for file in $(ls $QC_REFERENCE/*.gz); do gunzip $file; done
+          configure_qp_ivar_trim --env-script "source /home/runner/.profile; conda activate qp-ivar-trim; export QC_REFERENCE=${PWD}/qp_ivar_trim/support_files/databases/; export ENVIRONMENT='source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE=${PWD}/qp_ivar_trim/support_files/databases/'" --server-cert $QIITA_SERVER_CERT
           echo "Available Qiita plugins"
           ls ~/.qiita_plugins/
       - name: Starting Main Services
@@ -132,9 +124,8 @@ jobs:
           conda activate qp-ivar-trim
           export QIITA_SERVER_CERT=`pwd`/qiita-dev/qiita_core/support_files/server.crt
           export QIITA_CONFIG_FP=`pwd`/qiita-dev/qiita_core/support_files/config_test_local.cfg
-          export QC_REFERENCE_DB=$PWD/qp_ivar_trim/support_files/databases/
-          export ENVIRONMENT="source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE_DB=${PWD}/qp_ivar_trim/support_files/databases/"
-
+          export QC_REFERENCE=$PWD/qp_ivar_trim/support_files/databases/
+          export ENVIRONMENT="source /home/runner/.profile; source activate qp-ivar-trim; export QC_REFERENCE=${PWD}/qp_ivar_trim/support_files/databases/"
           nosetests --with-doctest --with-coverage -v --cover-package=qp_ivar_trim
       - uses: codecov/codecov-action@v1
         with:

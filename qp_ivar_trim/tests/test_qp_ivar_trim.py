@@ -12,12 +12,12 @@ from os.path import exists, isdir, join, dirname, basename
 from shutil import rmtree, copyfile
 from tempfile import mkdtemp
 from json import dumps
-from itertools import zip_longest
 from functools import partial
 from qp_ivar_trim import plugin
 from qp_ivar_trim.utils import plugin_details
 from qp_ivar_trim.qp_ivar_trim import (
-    get_dbs_list, _generate_commands, ivar_trim_to_array, QC_REFERENCE_DB, IVAR_TRIM_CMD)
+    get_primer, _generate_commands, ivar_trim_to_array, QC_REFERENCE,
+    IVAR_TRIM_CMD)
 
 
 class IvarTrimTests(PluginTestCase):
@@ -27,9 +27,9 @@ class IvarTrimTests(PluginTestCase):
         out_dir = mkdtemp()
         self.maxDiff = None
         self.out_dir = out_dir
-        self.dbs = get_dbs_list()
-        self.db_path = QC_REFERENCE_DB
-        self.params = {'primer': 'primer', 'threads': 2}
+        self.primer = get_primer()
+        self.primer_path = QC_REFERENCE
+        self.params = {'primer': 'primer', 'primer_offset': 5}
         self._clean_up_files = []
         self._clean_up_files.append(out_dir)
 
@@ -41,37 +41,34 @@ class IvarTrimTests(PluginTestCase):
                 else:
                     remove(fp)
 
-                    
-
-    def test_get_dbs_list(self):
-        dbs = get_dbs_list()
-        self.assertCountEqual(dbs, ['primer.bed'])
+    def test_get_primer(self):
+        primer = get_primer()
+        self.assertEqual(primer, 'primer.bed')
 
     def test_generate_commands(self):
-        params = {'nprocs': 5,
+        params = {'primer_offset': 5,
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
         bam_file = ['CALM_SEP_001970_03_S265_L001.sorted.bam.gz',
                     'CALM_SEP_001970_03_S265_L002.sorted.bam.gz']
-        obs = _generate_commands(bam_file, 
-                                 params['nprocs'], 
+        obs = _generate_commands(bam_file,
                                  params['primer'],
+                                 params['primer_offset'],
                                  params['out_dir'])
-        cmd = IVAR_TRIM_CMD.format(bam_file, nprocs=params['nprocs'], primer=params['primer'], out_dir=params['out_dir']) 
+        cmd = IVAR_TRIM_CMD.format(
+            bam_file, primer_offset=params['primer_offset'],
+            primer=params['primer'], out_dir=params['out_dir'])
         ecmds = []
         for bam_gz in bam_file:
             fname_gz = basename(bam_gz)
             fname = fname_gz[:-3]
             bam = bam_gz[:-3]
-            prefix_name = bam[:-11] + '.trimmed.unsorted'
-            ecmds.append(cmd % (bam_gz, bam, prefix_name, bam))
+            ecmds.append(cmd % (bam_gz, bam, fname, fname))
         eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
-
-
 
     def test_ivar_trim(self):
         # inserting new prep template
@@ -88,7 +85,7 @@ class IvarTrimTests(PluginTestCase):
         # inserting artifacts
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
-        
+
         fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam.gz')
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam.gz')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
@@ -113,7 +110,7 @@ class IvarTrimTests(PluginTestCase):
         data = {'user': 'demo@microbio.me',
                 'command': dumps([plugin_details['name'],
                                   plugin_details['version'],
-                                  'Adapter and host filtering']),
+                                  'ivar trim']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         job_id = self.qclient.post(
@@ -156,7 +153,7 @@ class IvarTrimTests(PluginTestCase):
             '#!/bin/bash\n',
             '#PBS -M qiita.help@gmail.com\n',
             f'#PBS -N {job_id}\n',
-            '#PBS -l nodes=1:ppn=2\n',
+            '#PBS -l nodes=1\n',
             '#PBS -l walltime=30:00:00\n',
             '#PBS -l mem=16g\n',
             f'#PBS -o {out_dir}/{job_id}_${{PBS_ARRAYID}}.log\n',
@@ -166,7 +163,7 @@ class IvarTrimTests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source /home/runner/.profile; source activate qp-ivar-trim; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            f'export QC_REFERENCE={QC_REFERENCE}\n',
             'date\n',
             'hostname\n',
             'echo ${PBS_JOBID} ${PBS_ARRAYID}\n',
@@ -182,7 +179,7 @@ class IvarTrimTests(PluginTestCase):
             '#!/bin/bash\n',
             '#PBS -M qiita.help@gmail.com\n',
             f'#PBS -N finish-{job_id}\n',
-            '#PBS -l nodes=1:ppn=1\n',
+            '#PBS -l nodes=1\n',
             '#PBS -l walltime=10:00:00\n',
             '#PBS -l mem=10g\n',
             f'#PBS -o {out_dir}/finish-{job_id}.log\n',
@@ -191,7 +188,7 @@ class IvarTrimTests(PluginTestCase):
             'set -e\n',
             f'cd {out_dir}\n',
             'source /home/runner/.profile; source activate qp-ivar-trim; '
-            f'export QC_REFERENCE_DB={QC_REFERENCE_DB}\n',
+            f'export QC_REFERENCE={QC_REFERENCE}\n',
             'date\n',
             'hostname\n',
             'echo $PBS_JOBID\n',
@@ -217,14 +214,16 @@ class IvarTrimTests(PluginTestCase):
         #    f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
         #    f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
         exp_commands = [
-            f'gunzip {apath}/{fname_1}.sorted.bam.gz'
-            f'ivar trim -x 5 -e -b primer.bed -i {fname_1}.sorted.bam '
-             '-p {out_dir}/{fname_1}.sorted.bam '
-            f'gzip {out_dir}/{fname_1}.unsorted.bam\n'
-            f'gunzip {apath}/{fname_2}.sorted.bam.gz'
-            f'ivar trim -x 5 -e -b primer.bed -i {fname_2}.sorted.bam '
-             '-p {out_dir}/{fname_2}.sorted.bam '
-            f'gzip {out_dir}/{fname_2}.unsorted.bam\n'
+            f'gunzip {apath}/{fname_1}.sorted.bam.gz; '
+            f'ivar trim -x 5 -e -i {apath}/{fname_1}.sorted.bam '
+            f'-b {QC_REFERENCE}primer.bed '
+            f'-p {out_dir}/{fname_1}.sorted.bam; '
+            f'gzip {out_dir}/{fname_1}.sorted.bam\n',
+            f'gunzip {apath}/{fname_2}.sorted.bam.gz; '
+            f'ivar trim -x 5 -e -i {apath}/{fname_2}.sorted.bam '
+            f'-b {QC_REFERENCE}primer.bed '
+            f'-p {out_dir}/{fname_2}.sorted.bam; '
+            f'gzip {out_dir}/{fname_2}.sorted.bam'
         ]
         self.assertEqual(commands, exp_commands)
 

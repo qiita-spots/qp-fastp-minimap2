@@ -7,37 +7,40 @@
 # -----------------------------------------------------------------------------
 
 from qiita_client import QiitaPlugin, QiitaCommand
-from .qp_ivar_trim import get_dbs_list, ivar_trim
+from .qp_ivar_trim import get_primer, ivar_trim
 from .utils import plugin_details
 from os.path import splitext
 
 
-THREADS = 15
+PRIMER_POS_OFFSET = 5
 
 
 # Initialize the plugin
 plugin = QiitaPlugin(**plugin_details)
 
 # Define the command
-dbs = get_dbs_list()
-dbs_without_extension = [splitext(db)[0] for db in dbs]
-dbs_defaults = ', '.join([f'"{x}"' for x in dbs_without_extension])
+primer = get_primer()
+primer_without_extension = splitext(primer)[0]
 req_params = {'input': ('artifact', ['BAM'])}
 opt_params = {
     'primer': [
-        f'choice:["None", {dbs_defaults}]', dbs_without_extension[0]],
-    'threads': ['integer', f'{THREADS}']}
+        'string', primer_without_extension],
+    'primer_offset': ['integer', f'{PRIMER_POS_OFFSET}']}
 
-outputs = {'trimmed files': 'BAM'}
+outputs = {'Trimmed files': 'BAM'}
+# default_params = {
+#     'auto-detect adapters only filtering [not recommended]': {
+#         'primer': "None", 'threads': THREADS}}
+# for db in dbs_without_extension:
+#     name = f'auto-detect adapters and {db} + phix filtering'
+#     default_params[name] = {'primer': db, 'threads': THREADS}
 default_params = {
-    'auto-detect adapters only filtering [not recommended]': {
-        'primer': "None", 'threads': THREADS}}
-for db in dbs_without_extension:
-    name = f'auto-detect adapters and {db} + phix filtering'
-    default_params[name] = {'primer': db, 'threads': THREADS}
+    'default params': {
+        'primer': primer_without_extension,
+        'primer_offset': 5}}
 
 ivar_trim_cmd = QiitaCommand(
-    'Adapter and host filtering', "Sequence adapter and host filtering",
+    'ivar trim', "Trimming with ivar",
     ivar_trim, req_params, opt_params, outputs, default_params)
 
 plugin.register_command(ivar_trim_cmd)
