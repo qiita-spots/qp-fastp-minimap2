@@ -50,8 +50,8 @@ class IvarTrimTests(PluginTestCase):
                   'primer': 'primer',
                   'out_dir': '/foo/bar/output'}
         # need to change these to bam
-        bam_file = ['CALM_SEP_001970_03_S265_L001.sorted.bam.gz',
-                    'CALM_SEP_001970_03_S265_L002.sorted.bam.gz']
+        bam_file = ['CALM_SEP_001970_03_S265_L001.sorted.bam',
+                    'CALM_SEP_001970_03_S265_L002.sorted.bam']
         obs = _generate_commands(bam_file,
                                  params['primer'],
                                  params['primer_offset'],
@@ -60,12 +60,10 @@ class IvarTrimTests(PluginTestCase):
             bam_file, primer_offset=params['primer_offset'],
             primer=params['primer'], out_dir=params['out_dir'])
         ecmds = []
-        for bam_gz in bam_file:
-            fname_gz = basename(bam_gz)
-            fname = fname_gz[:-3]
-            bam = bam_gz[:-3]
-            ecmds.append(cmd % (bam_gz, bam, fname, fname))
-        eof = [(f'{params["out_dir"]}/{bam}', 'tgz')
+        for bam in bam_file:
+            fname = basename(bam)
+            ecmds.append(cmd % (bam, fname))
+        eof = [(f'{params["out_dir"]}/{bam}', 'bam')
                for bam in bam_file]
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
@@ -86,20 +84,20 @@ class IvarTrimTests(PluginTestCase):
         in_dir = mkdtemp()
         self._clean_up_files.append(in_dir)
 
-        fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam.gz')
-        fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam.gz')
+        fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
+        fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
         # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
         # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
         source_dir = 'qp_ivar_trim/support_files/raw_data'
-        copyfile(f'{source_dir}/{fname_1}.sorted.bam.gz',
+        copyfile(f'{source_dir}/{fname_1}.sorted.bam',
                  fp1_1)
-        copyfile(f'{source_dir}/{fname_2}.sorted.bam.gz',
+        copyfile(f'{source_dir}/{fname_2}.sorted.bam',
                  fp1_2)
 
         data = {
             'filepaths': dumps([
-                (fp1_1, 'tgz'),
-                (fp1_2, 'tgz')]),
+                (fp1_1, 'bam'),
+                (fp1_2, 'bam')]),
             'type': "BAM",
             'name': "Test artifact",
             'prep': pid}
@@ -197,13 +195,13 @@ class IvarTrimTests(PluginTestCase):
         self.assertEqual(finish_qsub, exp_finish_qsub)
 
         exp_out_files = [
-            f'{out_dir}/{fname_1}.sorted.bam.gz\ttgz\n',
-            f'{out_dir}/{fname_2}.sorted.bam.gz\ttgz']
+            f'{out_dir}/{fname_1}.sorted.bam\tbam\n',
+            f'{out_dir}/{fname_2}.sorted.bam\tbam']
         self.assertEqual(out_files, exp_out_files)
 
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
-        apath = dirname(artifact_info['files']['tgz'][0])
+        apath = dirname(artifact_info['files']['bam'][0])
         # exp_commands = [
         #    f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
         #    f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
@@ -214,16 +212,12 @@ class IvarTrimTests(PluginTestCase):
         #    f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
         #    f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
         exp_commands = [
-            f'gunzip {apath}/{fname_1}.sorted.bam.gz; '
             f'ivar trim -x 5 -e -i {apath}/{fname_1}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
             f'-p {out_dir}/{fname_1}.sorted.bam; '
-            f'gzip {out_dir}/{fname_1}.sorted.bam\n',
-            f'gunzip {apath}/{fname_2}.sorted.bam.gz; '
             f'ivar trim -x 5 -e -i {apath}/{fname_2}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
             f'-p {out_dir}/{fname_2}.sorted.bam; '
-            f'gzip {out_dir}/{fname_2}.sorted.bam'
         ]
         self.assertEqual(commands, exp_commands)
 

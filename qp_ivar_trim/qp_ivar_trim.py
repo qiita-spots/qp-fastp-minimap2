@@ -22,9 +22,9 @@ IVAR_TRIM_BASE = 'ivar trim -x {primer_offset} -e -i %s -b {primer}'\
     ' -p {out_dir}/%s'
 # IVAR_TRIM_CMD = 'gunzip %s ivar trim -x {nprocs} -e -b {primer} -i %s
 # -p {out_dir}/%s; gzip {out_dir}/%s'
-GZIP_CMD = 'gzip {out_dir}/%s'
-GUNZIP_CMD = 'gunzip %s'
-IVAR_TRIM_CMD = f'{GUNZIP_CMD}; {IVAR_TRIM_BASE}; {GZIP_CMD}'
+# GZIP_CMD = 'gzip {out_dir}/%s'
+# GUNZIP_CMD = 'gunzip %s'
+IVAR_TRIM_CMD = IVAR_TRIM_BASE
 
 
 def get_primer():
@@ -34,22 +34,20 @@ def get_primer():
     return [basename(f) for f in glob(f'{folder}/*.bed')][0]
 
 
-def _generate_commands(untrimmed_bams_gz, primer, primer_offset, out_dir):
+def _generate_commands(untrimmed_bams, primer, primer_offset, out_dir):
     """Helper function to generate commands and facilite testing"""
     cmd = IVAR_TRIM_CMD
-    files = untrimmed_bams_gz
+    files = untrimmed_bams
     command = cmd.format(primer_offset=primer_offset,
                          primer=primer, out_dir=out_dir)
 
     out_files = []
     commands = []
-    for bam_gz in files:
-        fname_gz = basename(bam_gz)
-        fname = fname_gz[:-3]
-        bam = bam_gz[:-3]
-        out_files.append((f'{out_dir}/{fname_gz}', 'tgz'))
+    for bam in files:
+        fname = basename(bam)
+        out_files.append((f'{out_dir}/{fname}', 'bam'))
 
-        cmd = command % (bam_gz, bam, fname, fname)
+        cmd = command % (bam, fname)
         commands.append(cmd)
 
     return commands, out_files
@@ -137,7 +135,7 @@ def ivar_trim_to_array(files, out_dir, params, prep_info, url, job_id):
     # we are not going to use it and simply loop over the ordered
     # fwd_seqs/rev_seqs
     commands, out_files = _generate_commands(
-        files['tgz'], primer, params['primer_offset'], out_dir)
+        files['bam'], primer, params['primer_offset'], out_dir)
 
     # writing the job array details
     details_name = join(out_dir, 'ivar_trim.array-details')
