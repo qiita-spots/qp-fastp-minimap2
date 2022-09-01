@@ -86,8 +86,7 @@ class IvarTrimTests(PluginTestCase):
 
         fp1_1 = join(in_dir, 'CALM_SEP_001970_03_S265_L001.sorted.bam')
         fp1_2 = join(in_dir, 'CALM_SEP_001970_03_S265_L002.sorted.bam')
-        # fp2_1 = join(in_dir, 'S22282_S102_L001_R1_001.fastq.gz')
-        # fp2_2 = join(in_dir, 'S22282_S102_L001_R2_001.fastq.gz')
+
         source_dir = 'qp_ivar_trim/support_files/raw_data'
         copyfile(f'{source_dir}/{fname_1}.sorted.bam',
                  fp1_1)
@@ -202,22 +201,14 @@ class IvarTrimTests(PluginTestCase):
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
         apath = dirname(artifact_info['files']['bam'][0])
-        # exp_commands = [
-        #    f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
-        #    f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
-        #    f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
-        #    f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
-        #    f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
-        #    f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
-        #    f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz -2 '
-        #    f'{out_dir}/S22282_S102_L001_R2_001.fastq.gz']
+
         exp_commands = [
             f'ivar trim -x 5 -e -i {apath}/{fname_1}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
-            f'-p {out_dir}/{fname_1}.sorted.bam\n '
+            f'-p {out_dir}/{fname_1}.sorted.bam\n'
             f'ivar trim -x 5 -e -i {apath}/{fname_2}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
-            f'-p {out_dir}/{fname_2}.sorted.bam '
+            f'-p {out_dir}/{fname_2}.sorted.bam'
         ]
         self.assertEqual(commands, exp_commands)
 
