@@ -205,10 +205,10 @@ class IvarTrimTests(PluginTestCase):
         exp_commands = [
             f'ivar trim -x 5 -e -i {apath}/{fname_1}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
-            f'-p {out_dir}/{fname_1}.sorted.bam; '
+            f'-p {out_dir}/{fname_1}.sorted.bam\n'
             f'ivar trim -x 5 -e -i {apath}/{fname_2}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
-            f'-p {out_dir}/{fname_2}.sorted.bam; '
+            f'-p {out_dir}/{fname_2}.sorted.bam'
         ]
         self.assertEqual(commands, exp_commands)
 
