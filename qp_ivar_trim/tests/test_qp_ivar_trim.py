@@ -65,8 +65,6 @@ class IvarTrimTests(PluginTestCase):
             ecmds.append(cmd % (bam, fname))
         eof = [(f'{params["out_dir"]}/{bam}', 'bam')
                for bam in bam_file]
-        print(cmd)
-        print(obs)
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
@@ -207,7 +205,7 @@ class IvarTrimTests(PluginTestCase):
         exp_commands = [
             f'ivar trim -x 5 -e -i {apath}/{fname_1}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
-            f'-p {out_dir}/{fname_1}.sorted.bam'
+            f'-p {out_dir}/{fname_1}.sorted.bam\n',
             f'ivar trim -x 5 -e -i {apath}/{fname_2}.sorted.bam '
             f'-b {QC_REFERENCE}primer.bed '
             f'-p {out_dir}/{fname_2}.sorted.bam'
