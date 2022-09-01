@@ -66,6 +66,7 @@ class IvarTrimTests(PluginTestCase):
         eof = [(f'{params["out_dir"]}/{bam}', 'bam')
                for bam in bam_file]
         print(cmd)
+        print(obs)
         self.assertCountEqual(obs[0], ecmds)
         self.assertCountEqual(obs[1], eof)
 
