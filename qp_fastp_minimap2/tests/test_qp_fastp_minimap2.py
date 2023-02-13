@@ -148,17 +148,17 @@ class FastpMinimap2Tests(PluginTestCase):
         self.params['environment'] = environ["ENVIRONMENT"]
 
         # Get the artifact filepath information
-        artifact_info = self.qclient.get("/qiita_db/artifacts/%s/" % aid)
-
-        # Get the artifact metadata
-        prep_info = self.qclient.get('/qiita_db/prep_template/%s/' % pid)
-        prep_file = prep_info['prep-file']
+        files, prep = self.qclient.artifact_and_preparation_files(aid)
+        fps = {'raw_forward_seqs': [], 'raw_reverse_seqs': []}
+        for sn, fs in files.items():
+            fps['raw_forward_seqs'].append(fs[0]['filepath'])
+            if fs[1]:
+                fps['raw_reverse_seqs'].append(fs[1]['filepath'])
 
         url = 'this-is-my-url'
 
         main_fp, finish_fp, out_files_fp = fastp_minimap2_to_array(
-            artifact_info['files'], out_dir, self.params, prep_file,
-            url, job_id)
+            fps, out_dir, self.params, prep, url, job_id)
 
         od = partial(join, out_dir)
         self.assertEqual(od(f'{job_id}.slurm'), main_fp)
@@ -232,7 +232,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
-        apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
+        apath = dirname(fps['raw_forward_seqs'][0])
         exp_commands = [
             f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
             f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
@@ -296,17 +296,17 @@ class FastpMinimap2Tests(PluginTestCase):
         self.params['environment'] = environ["ENVIRONMENT"]
 
         # Get the artifact filepath information
-        artifact_info = self.qclient.get("/qiita_db/artifacts/%s/" % aid)
-
-        # Get the artifact metadata
-        prep_info = self.qclient.get('/qiita_db/prep_template/%s/' % pid)
-        prep_file = prep_info['prep-file']
+        files, prep = self.qclient.artifact_and_preparation_files(aid)
+        fps = {'raw_forward_seqs': [], 'raw_reverse_seqs': []}
+        for sn, fs in files.items():
+            fps['raw_forward_seqs'].append(fs[0]['filepath'])
+            if fs[1]:
+                fps['raw_reverse_seqs'].append(fs[1]['filepath'])
 
         url = 'this-is-my-url'
 
         main_fp, finish_fp, out_files_fp = fastp_minimap2_to_array(
-            artifact_info['files'], out_dir, self.params, prep_file,
-            url, job_id)
+            fps, out_dir, self.params, prep, url, job_id)
 
         od = partial(join, out_dir)
         self.assertEqual(od(f'{job_id}.slurm'), main_fp)
@@ -378,7 +378,7 @@ class FastpMinimap2Tests(PluginTestCase):
 
         # the easiest to figure out the location of the artifact input files
         # is to check the first file of the raw forward reads
-        apath = dirname(artifact_info['files']['raw_forward_seqs'][0])
+        apath = dirname(fps['raw_forward_seqs'][0])
         exp_commands = [
             f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
             f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '

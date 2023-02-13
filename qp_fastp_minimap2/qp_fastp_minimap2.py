@@ -5,8 +5,6 @@
 #
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
-import pandas as pd
-
 from os import environ
 from os.path import basename, join
 from glob import glob
@@ -148,11 +146,7 @@ def fastp_minimap2_to_array(files, out_dir, params, prep_info, url, job_id):
     else:
         rev_seqs = []
 
-    df = pd.read_csv(prep_info, sep='\t', dtype='str',
-                     na_values=[], keep_default_na=True)
-    df.set_index('sample_name', inplace=True)
-    if 'run_prefix' not in df.columns:
-        raise ValueError('Missing run_prefix column in your preparation')
+    prep_info.set_index('sample_name', inplace=True)
 
     # Note that for processing we don't actually need the run_prefix so
     # we are not going to use it and simply loop over the ordered
