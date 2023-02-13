@@ -47,7 +47,7 @@ def execute(url, job_id, out_dir):
                 fps['raw_reverse_seqs'].append(fs[1]['filepath'])
 
         main_fp, finish_fp, out_files_fp = fastp_minimap2_to_array(
-            files, out_dir, parameters, prep, url, job_id)
+            fps, out_dir, parameters, prep, url, job_id)
 
         # Submitting jobs and returning id
         main_job = run(['sbatch', main_fp], stdout=PIPE)
