@@ -10,7 +10,7 @@
 from setuptools import setup
 from glob import glob
 
-__version__ = "2022.04"
+__version__ = "2023.12"
 
 classes = """
     Development Status :: 3 - Alpha
@@ -42,7 +42,7 @@ setup(name='qp-fastp-minimap2',
       packages=['qp_fastp_minimap2'],
       package_data={'qp_fastp_minimap2': [
         'support_files/*', 'support_files/databases/*',
-        'support_files/raw_data/*']},
+        'support_files/raw_data/*', 'support_files/fastp_known_adapters/*']},
       scripts=glob('scripts/*'),
       extras_require={'test': ["nose >= 0.10.1", "pep8"]},
 

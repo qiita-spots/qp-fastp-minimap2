@@ -16,7 +16,7 @@ from qiita_client import QiitaClient
 
 
 plugin_details = {'name': 'qp-fastp-minimap2',
-                  'version': '2022.04',
+                  'version': '2023.12',
                   'description': 'fastp + minimap2 pipeline'}
 
 

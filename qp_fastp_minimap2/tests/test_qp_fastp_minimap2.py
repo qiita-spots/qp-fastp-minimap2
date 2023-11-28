@@ -48,8 +48,10 @@ class FastpMinimap2Tests(PluginTestCase):
         self.assertCountEqual(dbs, ['artifacts.mmi', 'empty.mmi'])
 
     def test_generate_commands(self):
+        out_dir = '/foo/bar/output'
         params = {'database': 'artifacts', 'nprocs': 2,
-                  'out_dir': '/foo/bar/output'}
+                  'out_dir': out_dir, 'adapter_fasta': join(
+                    out_dir, 'fastp_known_adapters_formatted.fna')}
 
         fwd_seqs = ['sz1.fastq.gz', 'sc1.fastq.gz',
                     'sa1.fastq.gz', 'sd1.fastq.gz']
@@ -234,13 +236,15 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(fps['raw_forward_seqs'][0])
         exp_commands = [
-            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
+            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2 '
+            f'--adapter_fasta {out_dir}/fastp_known_adapters_formatted.fna '
             f'-I {apath}/S22205_S104_L001_R2_001.fastq.gz --stdout | '
             f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
             'samtools fastq -@ 2 -f  12 -F 256 -1 '
             f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz -2 '
             f'{out_dir}/S22205_S104_L001_R2_001.fastq.gz\n',
-            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
+            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2 '
+            f'--adapter_fasta {out_dir}/fastp_known_adapters_formatted.fna '
             f'-I {apath}/S22282_S102_L001_R2_001.fastq.gz --stdout | '
             f'minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi - -a  | '
             'samtools fastq -@ 2 -f  12 -F 256 -1 '
@@ -380,11 +384,13 @@ class FastpMinimap2Tests(PluginTestCase):
         # is to check the first file of the raw forward reads
         apath = dirname(fps['raw_forward_seqs'][0])
         exp_commands = [
-            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2  '
+            f'fastp -l 100 -i {apath}/S22205_S104_L001_R1_001.fastq.gz -w 2 '
+            f'--adapter_fasta {out_dir}/fastp_known_adapters_formatted.fna '
             f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
             '- -a  | samtools fastq -@ 2 -f  4 -0 '
             f'{out_dir}/S22205_S104_L001_R1_001.fastq.gz\n',
-            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2  '
+            f'fastp -l 100 -i {apath}/S22282_S102_L001_R1_001.fastq.gz -w 2 '
+            f'--adapter_fasta {out_dir}/fastp_known_adapters_formatted.fna '
             f'--stdout | minimap2 -ax sr -t 2 {QC_REFERENCE_DB}artifacts.mmi '
             '- -a  | samtools fastq -@ 2 -f  4 -0 '
             f'{out_dir}/S22282_S102_L001_R1_001.fastq.gz']

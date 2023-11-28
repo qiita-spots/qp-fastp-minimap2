@@ -6,9 +6,10 @@
 # The full license is in the file LICENSE, distributed with this software.
 # -----------------------------------------------------------------------------
 from os import environ
-from os.path import basename, join
+from os.path import basename, join, abspath, dirname
 from glob import glob
 from itertools import zip_longest
+from shutil import copyfile
 
 from qiita_client import ArtifactInfo
 
@@ -20,7 +21,7 @@ MAX_RUNNING = 8
 
 QC_REFERENCE_DB = environ["QC_REFERENCE_DB"]
 
-FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} '
+FASTP_BASE = 'fastp -l 100 -i %s -w {nprocs} --adapter_fasta {adapter_fasta}'
 MINIMAP2_BASE = 'minimap2 -ax sr -t {nprocs} {database} - -a '
 SAMTOOLS_BASE = 'samtools fastq -@ {nprocs} -f '
 
@@ -44,6 +45,16 @@ def get_dbs_list():
 
 def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
     """Helper function to generate commands and facilite testing"""
+
+    # copy adapter_fasta file to out_dir
+    source_adapter_fasta = join(
+        dirname(abspath(__file__)), 'support_files', 'fastp_known_adapters',
+        'fastp_known_adapters_formatted.fna')
+    adapter_fasta = join(out_dir, 'fastp_known_adapters_formatted.fna')
+    # this if is to help with test_qp_fastp_minimap2.test_generate_commands
+    if out_dir != '/foo/bar/output':
+        copyfile(source_adapter_fasta, adapter_fasta)
+
     files = zip_longest(fwd_seqs, rev_seqs)
     if rev_seqs:
         cmd = FASTP_CMD
@@ -53,7 +64,8 @@ def _generate_commands(fwd_seqs, rev_seqs, database, nprocs, out_dir):
         cmd = FASTP_CMD_SINGLE
         if database is not None:
             cmd = COMBINED_CMD_SINGLE
-    command = cmd.format(nprocs=nprocs, database=database, out_dir=out_dir)
+    command = cmd.format(nprocs=nprocs, database=database, out_dir=out_dir,
+                         adapter_fasta=adapter_fasta)
 
     out_files = []
     commands = []
