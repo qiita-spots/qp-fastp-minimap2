@@ -137,7 +137,7 @@ class FastpMinimap2Tests(PluginTestCase):
         data = {'user': 'demo@microbio.me',
                 'command': dumps([plugin_details['name'],
                                   plugin_details['version'],
-                                  'Adapter and host filtering']),
+                                  'Adapter and host filtering v23.12']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         job_id = self.qclient.post(
@@ -287,7 +287,7 @@ class FastpMinimap2Tests(PluginTestCase):
         data = {'user': 'demo@microbio.me',
                 'command': dumps([plugin_details['name'],
                                   plugin_details['version'],
-                                  'Adapter and host filtering']),
+                                  'Adapter and host filtering v23.12']),
                 'status': 'running',
                 'parameters': dumps(self.params)}
         job_id = self.qclient.post(

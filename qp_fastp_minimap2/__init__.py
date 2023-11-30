@@ -37,7 +37,7 @@ for db in dbs_without_extension:
     default_params[name] = {'reference': db, 'threads': THREADS}
 
 fastp_minimap2_cmd = QiitaCommand(
-    'Adapter and host filtering', "Sequence adapter and host filtering",
+    'Adapter and host filtering v23.12', "Sequence adapter and host filtering",
     fastp_minimap2, req_params, opt_params, outputs, default_params)
 
 plugin.register_command(fastp_minimap2_cmd)
