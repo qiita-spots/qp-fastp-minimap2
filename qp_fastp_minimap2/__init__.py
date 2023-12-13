@@ -30,14 +30,14 @@ opt_params = {
 
 outputs = {'Filtered files': 'per_sample_FASTQ'}
 default_params = {
-    'auto-detect adapters only filtering [not recommended]': {
+    'auto-detect adapters only filtering': {
         'reference': "None", 'threads': THREADS}}
 for db in dbs_without_extension:
     name = f'auto-detect adapters and {db} + phix filtering'
     default_params[name] = {'reference': db, 'threads': THREADS}
 
 fastp_minimap2_cmd = QiitaCommand(
-    'Adapter and host filtering v23.12', "Sequence adapter and host filtering",
+    'Adapter and host filtering v2023.12', "Sequence adapter and host filtering",
     fastp_minimap2, req_params, opt_params, outputs, default_params)
 
 plugin.register_command(fastp_minimap2_cmd)
