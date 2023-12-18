@@ -30,10 +30,10 @@ opt_params = {
 
 outputs = {'Filtered files': 'per_sample_FASTQ'}
 default_params = {
-    'auto-detect adapters only filtering': {
+    'fastp_known_adapters_formatted.fna only filtering': {
         'reference': "None", 'threads': THREADS}}
 for db in dbs_without_extension:
-    name = f'auto-detect adapters and {db} + phix filtering'
+    name = f'fastp_known_adapters_formatted.fna and {db} + phix filtering'
     default_params[name] = {'reference': db, 'threads': THREADS}
 
 fastp_minimap2_cmd = QiitaCommand(
